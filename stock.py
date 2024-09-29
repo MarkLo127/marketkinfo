@@ -1,5 +1,6 @@
 # 資料分析
 import pandas as pd  # 資料處理
+import json  # JSON 處理
 
 # 資料擷取與網路相關
 import yfinance as yf  # 股票數據
@@ -72,89 +73,78 @@ def plot_financial_data(period, time, plot_type='index'):
         st.plotly_chart(fig)
 
 #2.公司基本資訊
-def get_company_details_and_display(symbol):
-    try:
-        # 獲取公司基本資訊
-        stock_info = yf.Ticker(symbol)
-        com_info = stock_info.info
+# 翻譯字典
+translation_dict = {
+    'address1': '地址',
+    'city': '城市',
+    'country': '國家',
+    'phone': '電話',
+    'website': '網站',
+    'industry': '行業',
+    'sector': '產業',
+    'longBusinessSummary': '公司簡介',
+    'fullTimeEmployees': '全職員工數量',
+    'marketCap': '市值',
+    'totalRevenue': '總收入',
+    'netIncomeToCommon': '淨利潤',
+    'trailingEps': '每股盈餘(EPS)',
+    'trailingPE': '本益比(PE)',
+    'dividendRate': '股息率',
+    'dividendYield': '股息殖利率',
+    'beta': 'Beta值',
+    'profitMargins': '利潤率',
+    'revenueGrowth': '收入成長率',
+    'earningsGrowth': '收益成長率'
+}
 
-        if com_info:
-            selected_indicators = [
-                'longName', 'country', 'city', 'marketCap', 'totalRevenue', 
-                'grossMargins', 'operatingMargins', 'profitMargins', 'trailingEps', 
-                'pegRatio', 'dividendRate', 'payoutRatio', 'bookValue', 
-                'operatingCashflow', 'freeCashflow', 'returnOnEquity'
-            ]
+def get_company_details(symbol):
+    """獲取公司的詳細資訊"""
+    stock_info = yf.Ticker(symbol)
+    com_info = stock_info.info
 
-            selected_info = {indicator: com_info.get(indicator, '') for indicator in selected_indicators}
+    # 儲存資訊為 JSON
+    with open("df.json", "w") as outfile:
+        json.dump(com_info, outfile)
 
-            # 建立字典翻譯
-            translation = {
-                'longName': '公司名稱', 'country': '國家', 'city': '城市', 
-                'marketCap': '市值', 'totalRevenue': '總收入', 'grossMargins': '毛利率',
-                'operatingMargins': '營業利潤率', 'profitMargins': '净利率',
-                'trailingEps': '每股收益', 'pegRatio': 'PEG 比率', 
-                'dividendRate': '股息率', 'payoutRatio': '股息支付比例', 
-                'bookValue': '每股淨資產', 'operatingCashflow': '營運現金流', 
-                'freeCashflow': '自由現金流', 'returnOnEquity': '股東權益報酬率'
-            }
+    # 讀取資料並轉置
+    df = pd.read_json("df.json").head(1).transpose()
+    return df
 
-            # Pandas DataFrame
-            company_info = pd.DataFrame.from_dict(selected_info, orient='index', columns=['Value'])
-            company_info.rename(index=translation, inplace=True)
+def translate_info(df):
+    """翻譯公司資訊並格式化顯示"""
+    translated_info = {}
+    df.index = df.index.str.strip()  # 去除索引空格
 
-            # 轉換成百分比
-            percent_columns = ['毛利率', '營業利潤率', '净利率', '股息率', '股息支付比例', '股東權益報酬率']
-            for col in percent_columns:
-                if col in company_info.index:
-                    company_info.at[col, 'Value'] = pd.to_numeric(company_info.at[col, 'Value'], errors='coerce')  # 将非数字转换为 NaN
-                    company_info.at[col, 'Value'] = f"{company_info.at[col, 'Value']:.2%}" if pd.notna(company_info.at[col, 'Value']) else None
+    for key in translation_dict.keys():
+        if key in df.index:
+            value = df.loc[key].values[0]
+            if isinstance(value, float):
+                if 'rate' in key or 'Growth' in key or 'Yield' in key:
+                    value = f"{value * 100:.2f}%"  # 百分比格式
+                else:
+                    value = f"{value:,.2f}"  # 千分位格式
+            elif isinstance(value, int):
+                value = f"{value:,}"  # 千分位格式
+            translated_info[translation_dict[key]] = value
 
-            # 千分位表示
-            company_info['Value'] = company_info['Value'].apply(lambda x: "{:,.0f}".format(x) if isinstance(x, (int, float)) and x >= 1000 else x)
+    # 移除郵遞區號
+    return pd.DataFrame.from_dict(translated_info, orient='index', columns=['內容'])
 
-            # 顯示公司基本資訊
-            st.header(f"{symbol}-基本資訊")
-            st.table(company_info)
+def get_location(address,city,country):
+    """獲取公司位置的經緯度"""
+    geolocator = Nominatim(user_agent="company_locator")
+    location = geolocator.geocode(f"{address}, {city},{country}")
+    return location
 
-            st.header(f"{symbol}-位置資訊")
-            map = display_location(com_info)
-            if map:
-                st.components.v1.html(map._repr_html_(), height=400)
-
-        else:
-            st.error(f"{symbol} 公司的基本資訊無法獲取。")
-            
-    except Exception as e:
-        st.error(f"無法獲取公司基本資訊：{str(e)}")
-
-
-def display_location(com_info):
-    if 'city' in com_info and 'country' in com_info:
-        city = com_info['city']
-        country = com_info['country']
-
-        try:
-            # 使用 Nominatim 服務進行地理編碼
-            geolocator = Nominatim(user_agent="streamlit_app")
-            location = geolocator.geocode(f"{city}, {country}")
-
-            if location:
-                # 使用 Folium 創建地圖，並將其定位到公司位置
-                map = folium.Map(location=[location.latitude, location.longitude], zoom_start=10)
-                # 添加標記
-                folium.Marker([location.latitude, location.longitude], popup=f"{city}, {country}").add_to(map)
-                return map
-            else:
-                st.error("無法找到公司位置")
-                return None
-
-        except GeocoderInsufficientPrivileges as e:
-            st.error(f"地理編碼服務無法訪問: {str(e)}")
-            return None
-    else:
-        st.error("缺少城市或國家")
-        return None
+def display_map(location, translated_df):
+    """顯示公司位置的地圖"""
+    m = folium.Map(location=[location.latitude, location.longitude], zoom_start=13)
+    folium.Marker(
+        [location.latitude, location.longitude],
+        popup=translated_df.to_html(escape=False),
+        tooltip='公司位置'
+    ).add_to(m)
+    folium_static(m)
 
 #3.公司經營狀況
 def get_stock_details_and_plot(symbol):
@@ -489,7 +479,28 @@ def app():
     elif options == '公司基本資訊':
         symbol = st.text_input('輸入美股代號').upper()
         if st.button('查詢'):
-            get_company_details_and_display(symbol)
+            if symbol:
+                df = get_company_details(symbol)
+                translated_df = translate_info(df)
+                
+                # 獲取地址資訊
+                address = df.loc['address1'].values[0]
+                city = df.loc['city'].values[0]
+                country = df.loc['country'].values[0]
+                
+                # 獲取公司位置
+                location = get_location(address,city,country)
+                
+                # 顯示翻譯後的資訊
+                st.subheader(f"{symbol}-基本資訊")
+                st.table(translated_df)
+                
+                # 顯示地圖
+                if location:
+                    st.subheader(f"{symbol}-位置")
+                    display_map(location, translated_df)
+                else:
+                    st.error(f"無法獲取{symbol}位置。")
 
     elif  options == '公司經營狀況':
         symbol = st.text_input('輸入美股代號').upper()
