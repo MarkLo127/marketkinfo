@@ -638,7 +638,7 @@ def app():
                             st.table(f'**[{news["Title"]}]({news["URL"]})**')
                     st.markdown(f"[資料來源](https://finviz.com/quote.ashx?t={symbol})")
                 else:
-                    st.write(f"查無{symbol}近期相關消息")
+                    st.error(f"查無{symbol}近期相關消息")
 
 
 
