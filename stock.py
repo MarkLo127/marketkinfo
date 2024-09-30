@@ -238,7 +238,7 @@ def get_stock_details_and_plot(symbol):
     st.subheader(f'{symbol}-經營狀況')
     st.plotly_chart(fig, use_container_width=True)
     with st.expander(f'展開{symbol}-經營狀況'):
-        st.write(df)
+        st.table(df)
 
 # 4.公司財報
 def financial_statements(symbol):
@@ -635,7 +635,7 @@ def app():
                     # 打印所有新闻链接
                     with st.expander(f'展開{symbol}-近期相關消息連結'):
                         for news in news_data:
-                            st.write(f'**[{news["Title"]}]({news["URL"]})**')
+                            st.table(f'**[{news["Title"]}]({news["URL"]})**')
                     st.markdown(f"[資料來源](https://finviz.com/quote.ashx?t={symbol})")
                 else:
                     st.write(f"查無{symbol}近期相關消息")
