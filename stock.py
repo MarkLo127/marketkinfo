@@ -148,15 +148,22 @@ class CompanyInfo:
         return pd.DataFrame.from_dict(translated_info, orient='index', columns=['內容'])
 
     def get_location(self, address, city, country):
-        """獲取公司位置的經緯度"""
+        """獲取公司位置的經緯度，若 address 無法定位則使用 city 定位"""
         geolocator = Nominatim(user_agent="streamlit_app")
+        
+        # 優先嘗試使用 address 定位
         location = geolocator.geocode(f"{address}, {city}, {country}")
+        
+        # 如果 address 無法定位，則使用 city 和 country 來定位
+        if location is None:
+            location = geolocator.geocode(f"{city}, {country}")
         return location
+
 
     def display_map(self, location, translated_df):
         """顯示公司位置的地圖"""
         m = folium.Map(location=[location.latitude, location.longitude], zoom_start=13)
-        folium.Marker([location.latitude, location.longitude],popup=translated_df.to_html(escape=False),tooltip='公司位置').add_to(m)
+        folium.Marker([location.latitude, location.longitude],popup=translated_df.to_html(escape=False),tooltip=f'{self.symbol}位置').add_to(m)
         folium_static(m)
 
 #3.公司經營狀況
