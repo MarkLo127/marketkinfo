@@ -149,7 +149,7 @@ class CompanyInfo:
 
     def get_location(self, address, city, country):
         """獲取公司位置的經緯度"""
-        geolocator = Nominatim(user_agent="company_locator")
+        geolocator = Nominatim(user_agent="streamlit_app")
         location = geolocator.geocode(f"{address}, {city}, {country}")
         return location
 
