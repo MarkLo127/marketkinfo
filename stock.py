@@ -631,7 +631,7 @@ def app():
                     # 将新闻数据转换为DataFrame
                     df = pd.DataFrame(news_data)
                     st.subheader(f"{symbol}-近期相關消息")
-                    st.table(df)  # 显示表格
+                    st.write(df)  # 显示表格
                     # 打印所有新闻链接
                     with st.expander(f'展開{symbol}-近期相關消息連結'):
                         for news in news_data:
