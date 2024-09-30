@@ -149,18 +149,14 @@ class CompanyInfo:
 
     def get_location(self, address, city, country):
         """獲取公司位置的經緯度"""
-        geolocator = Nominatim(user_agent="streamlit_app")
+        geolocator = Nominatim(user_agent="company_locator")
         location = geolocator.geocode(f"{address}, {city}, {country}")
         return location
 
     def display_map(self, location, translated_df):
         """顯示公司位置的地圖"""
         m = folium.Map(location=[location.latitude, location.longitude], zoom_start=13)
-        folium.Marker(
-            [location.latitude, location.longitude],
-            popup=translated_df.to_html(escape=False),
-            tooltip='公司位置'
-        ).add_to(m)
+        folium.Marker([location.latitude, location.longitude],popup=translated_df.to_html(escape=False),tooltip='公司位置').add_to(m)
         folium_static(m)
 
 #3.公司經營狀況
