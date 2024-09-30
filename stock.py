@@ -149,7 +149,7 @@ class CompanyInfo:
 
     def get_location(self, address, city, country):
         """獲取公司位置的經緯度"""
-        geolocator = Nominatim(user_agent="company_locator")
+        geolocator = Nominatim(user_agent="streamlit_app")
         location = geolocator.geocode(f"{address}, {city}, {country}")
         return location
 
@@ -207,8 +207,6 @@ class StockAnalyzer:
         # Step 5: Categorize and plot data
         st.subheader(f'{symbol}-經營狀況')
         st.table(df)
-
- 
 
 # 4.公司財報
 def financial_statements(symbol):
@@ -364,7 +362,7 @@ def scrape_and_plot_finviz_data(symbol):
     st.plotly_chart(fig1, use_container_width=True)
     st.plotly_chart(fig2, use_container_width=True)
     with st.expander(f'展開{symbol}機構評級數據'):
-        st.table(df)
+        st.ta(df)
 
 # 7.相關新聞
 def get_stock_news(symbol):
