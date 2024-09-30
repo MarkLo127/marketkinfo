@@ -146,100 +146,6 @@ def display_map(location, translated_df):
     ).add_to(m)
     folium_static(m)
 
-#3.公司經營狀況
-def get_stock_details_and_plot(symbol):
-    # Step 1: Get stock statistics
-    url = f"https://finviz.com/quote.ashx?t={symbol}&p=d#statements"
-    headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"}
-    
-    try:
-        response = res.get(url, headers=headers)
-        response.raise_for_status()
-    except res.exceptions.RequestException as e:
-        st.error(f"獲取 {symbol} 數據時出錯: {e}")
-        return None
-    
-    # Step 2: Parse the HTML to get the data
-    soup = BeautifulSoup(response.text, 'html.parser')
-    table = soup.find('table', class_='snapshot-table2')
-    if not table:
-        st.error("頁面上未找到表格")
-        return None
-    
-    # Step 3: Extract data into a dictionary
-    rows = table.find_all('tr')
-    data = {}
-    for row in rows:
-        cells = row.find_all('td')
-        for i in range(0, len(cells), 2):
-            key = cells[i].get_text(strip=True)
-            value = cells[i + 1].get_text(strip=True)
-            data[key] = value
-    
-    # Step 4: Process values for categorization and plotting
-    def process_value(value):
-        if isinstance(value, str):
-            value = value.replace(',', '')  # Remove commas for thousands
-            if value.endswith('%'):
-                return float(value[:-1])  # Convert percentage to float
-            elif value.endswith('B'):
-                return float(value[:-1]) * 1e9  # Convert billions to float
-            elif value.endswith('M'):
-                return float(value[:-1]) * 1e6  # Convert millions to float
-            elif value.endswith('K'):
-                return float(value[:-1]) * 1e3  # Convert thousands to float
-            elif value.replace('.', '', 1).isdigit():  # Check if it's a numeric string
-                return float(value)  # Convert numeric string to float
-        return value  # Return the original value if no conversion is needed
-
-    # Create a DataFrame for categorization
-    df = pd.DataFrame(list(data.items()), columns=['Metric', 'Value'])
-
-    # Step 5: Categorize and plot data
-    categories = {
-        '估值指標': ['P/E', 'Forward P/E', 'PEG', 'P/S', 'P/B', 'P/C', 'P/FCF'],
-        '盈利能力': ['Gross Margin', 'Oper. Margin', 'Profit Margin', 'ROA', 'ROE', 'ROI'],
-        '表現指標': ['Perf Week', 'Perf Month', 'Perf Quarter', 'Perf Half Y', 'Perf Year', 'Perf YTD'],
-        '流動性': ['Quick Ratio', 'Current Ratio'],
-        '所有權': ['Insider Own', 'Inst Own', 'Shs Outstanding'],
-        '銷售與收入': ['Sales', 'Income'],
-        '簡單移動平均': ['SMA20', 'SMA50', 'SMA200'],
-        '其他': ['EPS (ttm)', 'EPS next Y', 'EPS next Q', 'Book/sh', 'Cash/sh', 'Dividend', 'Dividend %', 'Beta']
-    }
-    
-    specs = [
-        [{'type': 'xy'}, {'type': 'xy'}],
-        [{'type': 'xy'}, {'type': 'xy'}],
-        [{'type': 'domain'}, {'type': 'domain'}],
-        [{'type': 'xy'}, {'type': 'xy'}]
-    ]
-    
-    fig = make_subplots(rows=4, cols=2, subplot_titles=list(categories.keys()), specs=specs)
-    plot_idx = 0
-    
-    for category, metrics in categories.items():
-        plot_idx += 1
-        row = (plot_idx - 1) // 2 + 1
-        col = (plot_idx - 1) % 2 + 1
-        cat_data = df[df['Metric'].isin(metrics)].copy()
-        cat_data['Value'] = cat_data['Value'].apply(process_value)
-        cat_data['Value'] = pd.to_numeric(cat_data['Value'], errors='coerce')  # Convert non-numeric values to NaN
-        cat_data = cat_data.dropna(subset=['Value'])  # Drop rows with NaN values in 'Value'
-        cat_data = cat_data.sort_values(by='Value', ascending=False)
-        
-        if category in ['所有權', '銷售與收入']:
-            chart = go.Pie(labels=cat_data['Metric'], values=cat_data['Value'], name=category, sort=False)
-        else:
-            chart = go.Bar(x=cat_data['Metric'], y=cat_data['Value'], name=category, marker=dict(color=cat_data['Value'], colorscale='Viridis'))
-        
-        fig.add_trace(chart, row=row, col=col)
-    
-    fig.update_layout(height=1200, showlegend=True)
-    st.subheader(f'{symbol}-經營狀況')
-    st.plotly_chart(fig, use_container_width=True)
-    with st.expander(f'展開{symbol}-經營狀況'):
-        st.table(df)
-
 # 4.公司財報
 def financial_statements(symbol):
     try:
@@ -434,7 +340,7 @@ def app():
     st.markdown("<h1 style='text-align: center; color: rainbow;'>📈 StockInfo</h1>", unsafe_allow_html=True)
     st.header(' ',divider="rainbow")
     st.sidebar.title('📈 Menu')
-    options = st.sidebar.selectbox('選擇功能', ['大盤指數','公司基本資訊','公司經營狀況','公司財報','交易數據','機構買賣','近期相關消息'])
+    options = st.sidebar.selectbox('選擇功能', ['大盤指數','公司基本資訊','公司財報','交易數據','機構買賣','近期相關消息'])
     st.sidebar.markdown('''
     免責聲明：        
     1. K 線圖觀看角度      
@@ -501,12 +407,6 @@ def app():
                     display_map(location, translated_df)
                 else:
                     st.error(f"無法獲取{symbol}位置。")
-
-    elif  options == '公司經營狀況':
-        symbol = st.text_input('輸入美股代號').upper()
-        if st.button('查詢'):
-                get_stock_details_and_plot(symbol)
-                st.markdown(f"[資料來源](https://finviz.com/quote.ashx?t={symbol})")
     
     elif options == '公司財報':
         with st.expander("展開輸入參數"):
