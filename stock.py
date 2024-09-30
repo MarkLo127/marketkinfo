@@ -28,123 +28,191 @@ from ta.momentum import StochasticOscillator, RSIIndicator  # 隨機震盪與 RS
 import streamlit as st  # Streamlit 模組
 
 #1.大盤指數
-def plot_financial_data(period, time, plot_type='index'):
-    # Fetch historical data for the indexes
-    symbols = {
-        'index': ['^IXIC', '^VIX', '^GSPC', '^DJI', '^SOX', '^RUT'],
-        'foreign': ['^GSPC', '^IXIC', '^HSI', '399001.SZ', '^TWII', '^N225']
-    }
-    
-    data = {}
-    
-    for symbol in symbols[plot_type]:
-        data[symbol] = yf.download(symbol, period=period)['Close']
+class FinancialDataPlotter:
+    def __init__(self, period, time, plot_type='index'):
+        self.period = period
+        self.time = time
+        self.plot_type = plot_type
+        self.symbols = {
+            'index': ['^IXIC', '^VIX', '^GSPC', '^DJI', '^SOX', '^RUT'],
+            'foreign': ['^GSPC', '^IXIC', '^HSI', '399001.SZ', '^TWII', '^N225']
+        }
+        self.data = {}
 
-    if plot_type == 'index':
-        st.header(f'美股大盤＆中小企業{time}走勢')
+    def fetch_data(self):
+        """Fetch historical data for the selected indexes."""
+        for symbol in self.symbols[self.plot_type]:
+            self.data[symbol] = yf.download(symbol, period=self.period)['Close']
+
+    def plot_index(self):
+        """Plot the US indexes."""
+        st.header(f'美股大盤＆中小企業{self.time}走勢')
 
         # Create Plotly subplot figure for indexes
         fig = make_subplots(rows=3, cols=2, subplot_titles=["NASDAQ", "VIX", "S&P 500", "DJIA", "PHLX Semiconductor Sector", "Russell-2000"])
 
-        for i, symbol in enumerate(symbols['index']):
-            fig.add_trace(go.Scatter(x=data[symbol].index, y=data[symbol].values, mode='lines', name=symbol), row=(i // 2) + 1, col=(i % 2) + 1)
+        for i, symbol in enumerate(self.symbols['index']):
+            fig.add_trace(go.Scatter(x=self.data[symbol].index, y=self.data[symbol].values, mode='lines', name=symbol), row=(i // 2) + 1, col=(i % 2) + 1)
 
         fig.update_layout(height=1000, width=1000, showlegend=False)
         st.plotly_chart(fig)
 
-    elif plot_type == 'foreign':
-        st.header(f'美股大盤＆海外大盤{time}走勢')
+    def plot_foreign(self):
+        """Plot the foreign indexes."""
+        st.header(f'美股大盤＆海外大盤{self.time}走勢')
 
         # Create Plotly subplot figure for foreign indexes
         fig = make_subplots(rows=3, cols=2, subplot_titles=["S&P 500", "NASDAQ", "恆生指數", "深證指數", "加權指數", "日經指數"])
 
-        for i, symbol in enumerate(symbols['foreign']):
+        for i, symbol in enumerate(self.symbols['foreign']):
             row = (i // 2) + 1
             col = (i % 2) + 1
             
             # Apply conversion for foreign indexes
             if symbol in ['^HSI', '399001.SZ', '^TWII', '^N225']:  
                 conversion_factor = {'^HSI': 0.1382, '399001.SZ': 0.1382, '^TWII': 0.0308, '^N225': 0.0064}
-                fig.add_trace(go.Scatter(x=data[symbol].index, y=(data[symbol] * conversion_factor[symbol]).values, mode='lines', name=symbol), row=row, col=col)
+                fig.add_trace(go.Scatter(x=self.data[symbol].index, y=(self.data[symbol] * conversion_factor[symbol]).values, mode='lines', name=symbol), row=row, col=col)
             else:
-                fig.add_trace(go.Scatter(x=data[symbol].index, y=data[symbol].values, mode='lines', name=symbol), row=row, col=col)
+                fig.add_trace(go.Scatter(x=self.data[symbol].index, y=self.data[symbol].values, mode='lines', name=symbol), row=row, col=col)
 
         fig.update_layout(height=1000, width=1000, showlegend=False)
         st.plotly_chart(fig)
 
+    def plot(self):
+        """Plot the financial data based on the selected type."""
+        self.fetch_data()
+        if self.plot_type == 'index':
+            self.plot_index()
+        elif self.plot_type == 'foreign':
+            self.plot_foreign()
+
 #2.公司基本資訊
-# 翻譯字典
-translation_dict = {
-    'address1': '地址',
-    'city': '城市',
-    'country': '國家',
-    'phone': '電話',
-    'website': '網站',
-    'industry': '行業',
-    'sector': '產業',
-    'longBusinessSummary': '公司簡介',
-    'fullTimeEmployees': '全職員工數量',
-    'marketCap': '市值',
-    'totalRevenue': '總收入',
-    'netIncomeToCommon': '淨利潤',
-    'trailingEps': '每股盈餘(EPS)',
-    'trailingPE': '本益比(PE)',
-    'dividendRate': '股息率',
-    'dividendYield': '股息殖利率',
-    'beta': 'Beta值',
-    'profitMargins': '利潤率',
-    'revenueGrowth': '收入成長率',
-    'earningsGrowth': '收益成長率'
-}
+class CompanyInfo:
+    translation_dict = {
+        'address1': '地址',
+        'city': '城市',
+        'country': '國家',
+        'phone': '電話',
+        'website': '網站',
+        'industry': '行業',
+        'sector': '產業',
+        'longBusinessSummary': '公司簡介',
+        'fullTimeEmployees': '全職員工數量',
+        'marketCap': '市值',
+        'totalRevenue': '總收入',
+        'netIncomeToCommon': '淨利潤',
+        'trailingEps': '每股盈餘(EPS)',
+        'trailingPE': '本益比(PE)',
+        'dividendRate': '股息率',
+        'dividendYield': '股息殖利率',
+        'beta': 'Beta值',
+        'profitMargins': '利潤率',
+        'revenueGrowth': '收入成長率',
+        'earningsGrowth': '收益成長率'
+    }
 
-def get_company_details(symbol):
-    """獲取公司的詳細資訊"""
-    stock_info = yf.Ticker(symbol)
-    com_info = stock_info.info
+    def __init__(self, symbol):
+        self.symbol = symbol
+        self.com_info = self.get_company_details()
 
-    # 儲存資訊為 JSON
-    with open("df.json", "w") as outfile:
-        json.dump(com_info, outfile)
+    def get_company_details(self):
+        """獲取公司的詳細資訊"""
+        stock_info = yf.Ticker(self.symbol)
+        com_info = stock_info.info
 
-    # 讀取資料並轉置
-    df = pd.read_json("df.json").head(1).transpose()
-    return df
+        # 儲存資訊為 JSON
+        with open("df.json", "w") as outfile:
+            json.dump(com_info, outfile)
 
-def translate_info(df):
-    """翻譯公司資訊並格式化顯示"""
-    translated_info = {}
-    df.index = df.index.str.strip()  # 去除索引空格
+        # 讀取資料並轉置
+        df = pd.read_json("df.json").head(1).transpose()
+        return df
 
-    for key in translation_dict.keys():
-        if key in df.index:
-            value = df.loc[key].values[0]
-            if isinstance(value, float):
-                if 'rate' in key or 'Growth' in key or 'Yield' in key:
-                    value = f"{value * 100:.2f}%"  # 百分比格式
-                else:
-                    value = f"{value:,.2f}"  # 千分位格式
-            elif isinstance(value, int):
-                value = f"{value:,}"  # 千分位格式
-            translated_info[translation_dict[key]] = value
+    def translate_info(self):
+        """翻譯公司資訊並格式化顯示"""
+        translated_info = {}
+        self.com_info.index = self.com_info.index.str.strip()  # 去除索引空格
 
-    # 移除郵遞區號
-    return pd.DataFrame.from_dict(translated_info, orient='index', columns=['內容'])
+        for key in self.translation_dict.keys():
+            if key in self.com_info.index:
+                value = self.com_info.loc[key].values[0]
+                if isinstance(value, float):
+                    if 'rate' in key or 'Growth' in key or 'Yield' in key:
+                        value = f"{value * 100:.2f}%"  # 百分比格式
+                    else:
+                        value = f"{value:,.2f}"  # 千分位格式
+                elif isinstance(value, int):
+                    value = f"{value:,}"  # 千分位格式
+                translated_info[self.translation_dict[key]] = value
 
-def get_location(address,city,country):
-    """獲取公司位置的經緯度"""
-    geolocator = Nominatim(user_agent="company_locator")
-    location = geolocator.geocode(f"{address}, {city},{country}")
-    return location
+        return pd.DataFrame.from_dict(translated_info, orient='index', columns=['內容'])
 
-def display_map(location, translated_df):
-    """顯示公司位置的地圖"""
-    m = folium.Map(location=[location.latitude, location.longitude], zoom_start=13)
-    folium.Marker(
-        [location.latitude, location.longitude],
-        popup=translated_df.to_html(escape=False),
-        tooltip='公司位置'
-    ).add_to(m)
-    folium_static(m)
+    def get_location(self, address, city, country):
+        """獲取公司位置的經緯度"""
+        geolocator = Nominatim(user_agent="company_locator")
+        location = geolocator.geocode(f"{address}, {city}, {country}")
+        return location
+
+    def display_map(self, location, translated_df):
+        """顯示公司位置的地圖"""
+        m = folium.Map(location=[location.latitude, location.longitude], zoom_start=13)
+        folium.Marker(
+            [location.latitude, location.longitude],
+            popup=translated_df.to_html(escape=False),
+            tooltip='公司位置'
+        ).add_to(m)
+        folium_static(m)
+
+#3.公司經營狀況
+class StockAnalyzer:
+    def get_stock_details_and_plot(symbol):
+        # Step 1: Get stock statistics
+        url = f"https://finviz.com/quote.ashx?t={symbol}&p=d#statements"
+        headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"}
+        try:
+            response = res.get(url, headers=headers)
+            response.raise_for_status()
+        except res.exceptions.RequestException as e:
+            st.error(f"獲取 {symbol} 數據時出錯: {e}")
+            return None
+        # Step 2: Parse the HTML to get the data
+        soup = BeautifulSoup(response.text, 'html.parser')
+        table = soup.find('table', class_='snapshot-table2')
+        if not table:
+            st.error("頁面上未找到表格")
+            return None
+        
+        # Step 3: Extract data into a dictionary
+        rows = table.find_all('tr')
+        data = {}
+        for row in rows:
+            cells = row.find_all('td')
+            for i in range(0, len(cells), 2):
+                key = cells[i].get_text(strip=True)
+                value = cells[i + 1].get_text(strip=True)
+                data[key] = value
+        # Step 4: Process values for categorization and plotting
+        def process_value(value):
+            if isinstance(value, str):
+                value = value.replace(',', '')  # Remove commas for thousands
+                if value.endswith('%'):
+                    return float(value[:-1])  # Convert percentage to float
+                elif value.endswith('B'):
+                    return float(value[:-1]) * 1e9  # Convert billions to float
+                elif value.endswith('M'):
+                    return float(value[:-1]) * 1e6  # Convert millions to float
+                elif value.endswith('K'):
+                    return float(value[:-1]) * 1e3  # Convert thousands to float
+                elif value.replace('.', '', 1).isdigit():  # Check if it's a numeric string
+                    return float(value)  # Convert numeric string to float
+            return value  # Return the original value if no conversion is needed
+        # Create a DataFrame for categorization
+        df = pd.DataFrame(list(data.items()), columns=['Metric', 'Value'])
+        # Step 5: Categorize and plot data
+        st.subheader(f'{symbol}-經營狀況')
+        st.table(df)
+
+ 
 
 # 4.公司財報
 def financial_statements(symbol):
@@ -340,7 +408,7 @@ def app():
     st.markdown("<h1 style='text-align: center; color: rainbow;'>📈 StockInfo</h1>", unsafe_allow_html=True)
     st.header(' ',divider="rainbow")
     st.sidebar.title('📈 Menu')
-    options = st.sidebar.selectbox('選擇功能', ['大盤指數','公司基本資訊','公司財報','交易數據','機構買賣','近期相關消息'])
+    options = st.sidebar.selectbox('選擇功能', ['大盤指數','公司基本資訊','公司經營狀況','公司財報','交易數據','機構買賣','近期相關消息'])
     st.sidebar.markdown('''
     免責聲明：        
     1. K 線圖觀看角度      
@@ -354,59 +422,57 @@ def app():
         if period == '年初至今':
             period = 'ytd'
             time = '年初至今'
-            plot_financial_data(period, time, plot_type='index')
-            plot_financial_data(period, time, plot_type='foreign')
         elif period == '1年':
             period = '1y'
             time = '1年'
-            plot_financial_data(period, time, plot_type='index')
-            plot_financial_data(period, time, plot_type='foreign')
         elif period == '2年':
             period = '2y'
             time = '2年'
-            plot_financial_data(period, time, plot_type='index')
-            plot_financial_data(period, time, plot_type='foreign')
         elif period == '5年':
             period = '5y'
             time = '5年'
-            plot_financial_data(period, time, plot_type='index')
-            plot_financial_data(period, time, plot_type='foreign')
         elif period == '10年':
             period = '10y'
             time = '10年'
-            plot_financial_data(period, time, plot_type='index')
-            plot_financial_data(period, time, plot_type='foreign')
         elif period == '全部':
             period = 'max'
             time = '全部'
-            plot_financial_data(period, time, plot_type='index')
-            plot_financial_data(period, time, plot_type='foreign')
             
+        # 繪製大盤指數
+        plotter_index = FinancialDataPlotter(period, time, plot_type='index')
+        plotter_index.plot()
+
+        # 繪製海外大盤
+        plotter_foreign = FinancialDataPlotter(period, time, plot_type='foreign')
+        plotter_foreign.plot()
+    
     elif options == '公司基本資訊':
         symbol = st.text_input('輸入美股代號').upper()
         if st.button('查詢'):
             if symbol:
-                df = get_company_details(symbol)
-                translated_df = translate_info(df)
-                
+                company = CompanyInfo(symbol)
+                translated_df = company.translate_info()  
                 # 獲取地址資訊
-                address = df.loc['address1'].values[0]
-                city = df.loc['city'].values[0]
-                country = df.loc['country'].values[0]
-                
+                address = company.com_info.loc['address1'].values[0]
+                city = company.com_info.loc['city'].values[0]
+                country = company.com_info.loc['country'].values[0]
                 # 獲取公司位置
-                location = get_location(address,city,country)
-                
+                location = company.get_location(address, city, country)
                 # 顯示翻譯後的資訊
                 st.subheader(f"{symbol}-基本資訊")
                 st.table(translated_df)
-                
                 # 顯示地圖
                 if location:
                     st.subheader(f"{symbol}-位置")
-                    display_map(location, translated_df)
+                    company.display_map(location, translated_df)
                 else:
                     st.error(f"無法獲取{symbol}位置。")
+
+    elif  options == '公司經營狀況':
+        symbol = st.text_input('輸入美股代號').upper()
+        if st.button('查詢'):
+                StockAnalyzer.get_stock_details_and_plot(symbol)
+                st.markdown(f"[資料來源](https://finviz.com/quote.ashx?t={symbol})")
     
     elif options == '公司財報':
         with st.expander("展開輸入參數"):
@@ -538,7 +604,7 @@ def app():
                             st.write(f'**[{news["Title"]}]({news["URL"]})**')
                     st.markdown(f"[資料來源](https://finviz.com/quote.ashx?t={symbol})")
                 else:
-                    st.error(f"查無{symbol}近期相關消息")
+                    st.write(f"查無{symbol}近期相關消息")
 
 
 
