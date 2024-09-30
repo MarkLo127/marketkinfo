@@ -238,7 +238,7 @@ def get_stock_details_and_plot(symbol):
     st.subheader(f'{symbol}-經營狀況')
     st.plotly_chart(fig, use_container_width=True)
     with st.expander(f'展開{symbol}-經營狀況'):
-        st.write(df)
+        st.table(df)
 
 # 4.公司財報
 def financial_statements(symbol):
