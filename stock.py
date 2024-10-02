@@ -24,6 +24,10 @@ import plotly  # Plotly 主模組
 from ta.trend import MACD  # MACD 技術指標
 from ta.momentum import StochasticOscillator, RSIIndicator  # 隨機震盪與 RSI 技術指標
 
+#翻譯
+from deep_translator import GoogleTranslator
+import concurrent.futures
+
 # Streamlit 前端框架
 import streamlit as st  # Streamlit 模組
 
@@ -152,7 +156,7 @@ class CompanyInfo:
         geolocator = Nominatim(user_agent="streamlit_app")
         
         # 優先嘗試使用 address 定位
-        location = geolocator.geocode(f"{address}, {city}, {country}")
+        location = geolocator.geocode(f"{address}, {city}, {country}",timeout=10)
         
         # 如果 address 無法定位，則使用 city 和 country 來定位
         if location is None:
@@ -168,6 +172,7 @@ class CompanyInfo:
 
 #3.公司經營狀況
 class StockAnalyzer:
+    @staticmethod
     def get_stock_details_and_plot(symbol):
         # Step 1: Get stock statistics
         url = f"https://finviz.com/quote.ashx?t={symbol}&p=d#statements"
@@ -178,6 +183,7 @@ class StockAnalyzer:
         except res.exceptions.RequestException as e:
             st.error(f"獲取 {symbol} 數據時出錯: {e}")
             return None
+        
         # Step 2: Parse the HTML to get the data
         soup = BeautifulSoup(response.text, 'html.parser')
         table = soup.find('table', class_='snapshot-table2')
@@ -194,93 +200,271 @@ class StockAnalyzer:
                 key = cells[i].get_text(strip=True)
                 value = cells[i + 1].get_text(strip=True)
                 data[key] = value
+
         # Step 4: Process values for categorization and plotting
         def process_value(value):
-            if isinstance(value, str):
-                value = value.replace(',', '')  # Remove commas for thousands
-                if value.endswith('%'):
-                    return float(value[:-1])  # Convert percentage to float
-                elif value.endswith('B'):
-                    return float(value[:-1]) * 1e9  # Convert billions to float
-                elif value.endswith('M'):
-                    return float(value[:-1]) * 1e6  # Convert millions to float
-                elif value.endswith('K'):
-                    return float(value[:-1]) * 1e3  # Convert thousands to float
-                elif value.replace('.', '', 1).isdigit():  # Check if it's a numeric string
-                    return float(value)  # Convert numeric string to float
+            value = value.replace(',', '')  # Remove commas for thousands
+            if value.endswith('%'):
+                return float(value[:-1])  # Convert percentage to float
+            elif value.endswith('B'):
+                return float(value[:-1]) * 1e9  # Convert billions to float
+            elif value.endswith('M'):
+                return float(value[:-1]) * 1e6  # Convert millions to float
+            elif value.endswith('K'):
+                return float(value[:-1]) * 1e3  # Convert thousands to float
+            elif value.replace('.', '', 1).isdigit():
+                return float(value)  # Convert numeric string to float
             return value  # Return the original value if no conversion is needed
+
         # Create a DataFrame for categorization
         df = pd.DataFrame(list(data.items()), columns=['Metric', 'Value'])
         # Step 5: Categorize and plot data
-        st.subheader(f'{symbol}-經營狀況')
+        st.subheader(f'{symbol} - 經營狀況')
         st.table(df)
 
 # 4.公司財報
-def financial_statements(symbol):
-    try:
-        stock_info = yf.Ticker(symbol)
-        balance_sheet = stock_info.balance_sheet
-        income_statement = stock_info.financials
-        cash_flow = stock_info.cashflow
 
-        return balance_sheet, income_statement, cash_flow
-    except Exception as e:
-        st.error(f"獲取{symbol}財務報表發生錯誤：{str(e)}")
-        return None, None, None
+#年報
+class FinancialReportTranslator:
+    def __init__(self, symbol, target_language='zh-TW'):
+        self.symbol = symbol
+        self.target_language = target_language
+        self.balance_sheet = None
+        self.income_statement = None
+        self.cash_flow = None
+    
+    # 多進程翻譯函數
+    def parallel_translate(self, texts):
+        translator = GoogleTranslator(source='en', target=self.target_language)
+        # 使用多進程進行批量翻譯
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            translations = list(executor.map(translator.translate, texts))
+        return translations
 
-# Function to display financial statements
-def display_financial_statements(balance_sheet, income_statement, cash_flow):
-    if balance_sheet is not None:
-        st.subheader("資產負債表-年")
-        st.table(balance_sheet)
+    # 使用多進程翻譯DataFrame的列名和索引名
+    def translate_dataframe_columns_parallel(self, df):
+        if df is not None and not df.empty:
+            # 多進程翻譯列名
+            if isinstance(df.columns, pd.MultiIndex):
+                df.columns = pd.MultiIndex.from_tuples(
+                    [tuple(self.parallel_translate([str(col) for col in level])) for level in df.columns.levels]
+                )
+            else:
+                df.columns = self.parallel_translate([str(col) for col in df.columns])
 
-    if income_statement is not None:
-        st.subheader("綜合損益表-年")
-        st.table(income_statement)
+            # 多進程翻譯索引名
+            if isinstance(df.index, pd.MultiIndex):
+                df.index = pd.MultiIndex.from_tuples(
+                    [tuple(self.parallel_translate([str(idx) for idx in level])) for level in df.index.levels]
+                )
+            else:
+                df.index = self.parallel_translate([str(idx) for idx in df.index])
 
-    if cash_flow is not None:
-        st.subheader("現金流量表-年")
-        st.table(cash_flow)
+            # 處理重複的列名
+            df = self.remove_duplicate_columns(df)
 
-# Function to fetch financial statements quarterly
-def financial_statements_quarterly(symbol):
-    try:
-        stock_info = yf.Ticker(symbol)
-        quarterly_balance_sheet = stock_info.quarterly_balance_sheet
-        quarterly_income_statement = stock_info.quarterly_income_stmt
-        quarterly_cash_flow = stock_info.quarterly_cashflow  # Changed to fetch quarterly cash flow correctly
+        return df
 
-        return quarterly_balance_sheet, quarterly_income_statement, quarterly_cash_flow
-    except Exception as e:
-        st.error(f"獲取{symbol}財務報表發生錯誤：{str(e)}")
-        return None, None, None
+    # 處理重複的列名
+    def remove_duplicate_columns(self, df):
+        cols = pd.Series(df.columns)
+        if cols.duplicated().any():
+            cols += "_" + cols.groupby(cols).cumcount().astype(str)
+            df.columns = cols
+        return df
 
-# Function to display financial statements
-def display_financial_statements_quarterly(quarterly_balance_sheet, quarterly_income_statement, quarterly_cash_flow):
-    if quarterly_balance_sheet is not None:
-        st.subheader("資產負債表 - 季")
-        st.table(quarterly_balance_sheet)
+    # 獲取財務報表
+    def get_financial_statements(self):
+        try:
+            stock_info = yf.Ticker(self.symbol)
+            self.balance_sheet = stock_info.balance_sheet
+            self.income_statement = stock_info.financials
+            self.cash_flow = stock_info.cashflow
+        except Exception as e:
+            st.error(f"獲取財務報表發生錯誤：{str(e)}")
+            self.balance_sheet, self.income_statement, self.cash_flow = None, None, None
+    
+    # 翻譯財務報表
+    def translate_financial_statements(self):
+        if self.balance_sheet is not None:
+            self.balance_sheet = self.translate_dataframe_columns_parallel(self.balance_sheet)
+        if self.income_statement is not None:
+            self.income_statement = self.translate_dataframe_columns_parallel(self.income_statement)
+        if self.cash_flow is not None:
+            self.cash_flow = self.translate_dataframe_columns_parallel(self.cash_flow)
+    
+    # 顯示財務報表
+    def display_financial_statements(self):
+        if self.balance_sheet is not None:
+            st.subheader(f"{self.symbol}資產負債表/年")
+            st.table(self.balance_sheet)
 
-    if quarterly_income_statement is not None:
-        st.subheader("綜合損益表 - 季")
-        st.table(quarterly_income_statement)
+        if self.income_statement is not None:
+            st.subheader(f"{self.symbol}綜合損益表/年")
+            st.table(self.income_statement)
 
-    if quarterly_cash_flow is not None:
-        st.subheader("現金流量表 - 季")
-        st.table(quarterly_cash_flow)
+        if self.cash_flow is not None:
+            st.subheader(f"{self.symbol}現金流量表/年")
+            st.table(self.cash_flow)
+
+#季報
+class FinancialReportTranslatorQuarterly:
+    def __init__(self, symbol, target_language='zh-TW'):
+        self.symbol = symbol
+        self.target_language = target_language
+        self.quarterly_balance_sheet = None
+        self.quarterly_income_statement = None
+        self.quarterly_cash_flow = None
+    
+    # 多進程翻譯函數
+    def parallel_translate(self, texts):
+        translator = GoogleTranslator(source='en', target=self.target_language)
+        # 使用多進程進行批量翻譯
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            translations = list(executor.map(translator.translate, texts))
+        return translations
+
+    # 使用多進程翻譯DataFrame的列名和索引名
+    def translate_dataframe_columns_parallel(self, df):
+        if df is not None and not df.empty:
+            # 多進程翻譯列名
+            if isinstance(df.columns, pd.MultiIndex):
+                df.columns = pd.MultiIndex.from_tuples(
+                    [tuple(self.parallel_translate([str(col) for col in level])) for level in df.columns.levels]
+                )
+            else:
+                df.columns = self.parallel_translate([str(col) for col in df.columns])
+
+            # 多進程翻譯索引名
+            if isinstance(df.index, pd.MultiIndex):
+                df.index = pd.MultiIndex.from_tuples(
+                    [tuple(self.parallel_translate([str(idx) for idx in level])) for level in df.index.levels]
+                )
+            else:
+                df.index = self.parallel_translate([str(idx) for idx in df.index])
+
+            # 處理重複的列名
+            df = self.remove_duplicate_columns(df)
+
+        return df
+
+    # 處理重複列名
+    def remove_duplicate_columns(self, df):
+        cols = pd.Series(df.columns)
+        if cols.duplicated().any():
+            cols += "_" + cols.groupby(cols).cumcount().astype(str)
+            df.columns = cols
+        return df
+
+    # 獲取季度財務報表
+    def get_quarterly_financial_statements(self):
+        try:
+            stock_info = yf.Ticker(self.symbol)
+            self.quarterly_balance_sheet = stock_info.quarterly_balance_sheet
+            self.quarterly_income_statement = stock_info.quarterly_financials
+            self.quarterly_cash_flow = stock_info.quarterly_cashflow
+        except Exception as e:
+            st.error(f"獲取財務報表發生錯誤：{str(e)}")
+            self.quarterly_balance_sheet, self.quarterly_income_statement, self.quarterly_cash_flow = None, None, None
+    
+    # 翻譯季度財務報表
+    def translate_quarterly_financial_statements(self):
+        if self.quarterly_balance_sheet is not None:
+            self.quarterly_balance_sheet = self.translate_dataframe_columns_parallel(self.quarterly_balance_sheet)
+        if self.quarterly_income_statement is not None:
+            self.quarterly_income_statement = self.translate_dataframe_columns_parallel(self.quarterly_income_statement)
+        if self.quarterly_cash_flow is not None:
+            self.quarterly_cash_flow = self.translate_dataframe_columns_parallel(self.quarterly_cash_flow)
+    
+    # 顯示季度財務報表
+    def display_quarterly_financial_statements(self):
+        if self.quarterly_balance_sheet is not None:
+            st.subheader(f"{self.symbol}資產負債表/季")
+            st.table(self.quarterly_balance_sheet)
+
+        if self.quarterly_income_statement is not None:
+            st.subheader(f"{self.symbol}綜合損益表/季")
+            st.table(self.quarterly_income_statement)
+
+        if self.quarterly_cash_flow is not None:
+            st.subheader(f"{self.symbol}現金流量表/季")
+            st.table(self.quarterly_cash_flow)
 
 # 5.交易數據
-def get_stock_data(symbol,time_range):
-    stock_data = yf.download(symbol,period=time_range)
-    return stock_data
+class StockAnalyzer:
+    def __init__(self, symbol: str):
+        self.symbol = symbol
+        self.stock_data = pd.DataFrame()
 
-# 计算价格差异的函数
-def calculate_price_difference(stock_data, period_days):
-    latest_price = stock_data.iloc[-1]["Adj Close"]  # 获取最新的收盘价
-    previous_price = stock_data.iloc[-period_days]["Adj Close"] if len(stock_data) > period_days else stock_data.iloc[0]["Adj Close"]  # 获取特定天数前的收盘价
-    price_difference = latest_price - previous_price  # 计算价格差异
-    percentage_difference = (price_difference / previous_price) * 100  # 计算百分比变化
-    return price_difference, percentage_difference  # 返回价格差异和百分比变化
+    def get_stock_data(self, start_date, end_date):
+        """根據指定的日期範圍獲取股票數據"""
+        self.stock_data = yf.download(self.symbol, start=start_date, end=end_date)
+        return self.stock_data
+
+    def get_stock_data_range(self, period):
+        """根據指定的日期範圍獲取股票數據"""
+        self.stock_data_range = yf.download(self.symbol, period=period)
+        return self.stock_data_range
+    def calculate_price_difference(self, period_days: int) -> tuple:
+        """計算價格差異及百分比變化"""
+        if self.stock_data.empty or len(self.stock_data) < period_days:
+            return None, None
+        
+        latest_price = self.stock_data.iloc[-1]["Adj Close"]
+        previous_index = -1 - period_days if len(self.stock_data) > period_days else 0
+        previous_price = self.stock_data.iloc[previous_index]["Adj Close"]
+        
+        if previous_price == 0:
+            return None, None
+        
+        price_difference = latest_price - previous_price
+        percentage_difference = (price_difference / previous_price) * 100 if previous_price else None
+        return price_difference, percentage_difference
+
+    
+    def plot_stock_data(self):
+        """繪製 K 線圖及指標，並去除拉桿"""
+        if self.stock_data.empty:
+            st.error(f'查無 {self.symbol} 數據')
+            return
+        
+        fig = make_subplots(rows=4, cols=1, shared_xaxes=True, vertical_spacing=0.01,row_heights=[0.4, 0.2, 0.2, 0.2] ) 
+        mav5 = self.stock_data['Adj Close'].rolling(window=5).mean()
+        mav20 = self.stock_data['Adj Close'].rolling(window=20).mean()
+        mav60 = self.stock_data['Adj Close'].rolling(window=60).mean()
+        rsi = RSIIndicator(close=self.stock_data['Adj Close'], window=14)
+        macd = MACD(close=self.stock_data['Adj Close'], window_slow=26, window_fast=12, window_sign=9)
+        
+        # 繪製 K 線圖
+        fig.add_trace(go.Candlestick(x=self.stock_data.index,open=self.stock_data['Open'],high=self.stock_data['High'],low=self.stock_data['Low'],close=self.stock_data['Adj Close'],showlegend=False), row=1, col=1)
+
+        # 繪製移動平均線
+        fig.add_trace(go.Scatter(x=self.stock_data.index, y=mav5, opacity=0.7, line=dict(color='blue', width=2)), row=1, col=1)
+        fig.add_trace(go.Scatter(x=self.stock_data.index, y=mav20, opacity=0.7, line=dict(color='orange', width=2)), row=1, col=1)
+        fig.add_trace(go.Scatter(x=self.stock_data.index, y=mav60, opacity=0.7, line=dict(color='purple', width=2)), row=1, col=1)
+
+        # Plot volume 
+        colors = ['green' if row['Open'] - row['Adj Close'] >= 0 else 'red' for index, row in self.stock_data.iterrows()]
+        fig.add_trace(go.Bar(x=self.stock_data.index,y=self.stock_data['Volume'],marker_color=colors,name='Volume'),row=2, col=1)
+        
+        # 繪製 RSI 指標    
+        fig.add_trace(go.Scatter(x=self.stock_data.index, y=rsi.rsi(), line=dict(color='purple', width=2)), row=3, col=1)
+        fig.add_trace(go.Scatter(x=self.stock_data.index, y=[70]*len(self.stock_data.index), line=dict(color='red', width=1)), row=3, col=1)
+        fig.add_trace(go.Scatter(x=self.stock_data.index, y=[30]*len(self.stock_data.index), line=dict(color='green', width=1)), row=3, col=1)
+        
+        # 繪製 MACD 指標
+        colorsM = ['green' if val >= 0 else 'red' for val in macd.macd_diff()]
+        fig.add_trace(go.Bar(x=self.stock_data.index, y=macd.macd_diff(), marker_color=colorsM), row=4, col=1)
+        fig.add_trace(go.Scatter(x=self.stock_data.index, y=macd.macd(), line=dict(color='orange', width=2)), row=4, col=1)
+        fig.add_trace(go.Scatter(x=self.stock_data.index, y=macd.macd_signal(), line=dict(color='blue', width=1)), row=4, col=1)
+        
+        # 隱藏拉桿並禁用其他多餘的工具
+        fig.update_layout(xaxis_rangeslider_visible=False,showlegend=False,width=1000,height=1000,xaxis=dict(rangeselector=dict(visible=False)))
+        
+        # 隱藏 X 軸和 Y 軸的標籤
+        fig.update_xaxes(showticklabels=False)
+        fig.update_yaxes(showticklabels=False)
+        st.plotly_chart(fig)
 
 # 6.機構評級
 def scrape_and_plot_finviz_data(symbol):
@@ -472,8 +656,8 @@ def app():
     elif  options == '公司經營狀況':
         symbol = st.text_input('輸入美股代號').upper()
         if st.button('查詢'):
-                StockAnalyzer.get_stock_details_and_plot(symbol)
-                st.markdown(f"[資料來源](https://finviz.com/quote.ashx?t={symbol})")
+            StockAnalyzer.get_stock_details_and_plot(symbol)
+            st.markdown(f"[資料來源](https://finviz.com/quote.ashx?t={symbol})")
     
     elif options == '公司財報':
         with st.expander("展開輸入參數"):
@@ -484,17 +668,22 @@ def app():
                 symbol = st.text_input("輸入美股代碼").upper()
         if st.button('查詢'):
             if time_range == '年報':
-                balance_sheet, income_statement, cash_flow = financial_statements(symbol)
-                display_financial_statements(balance_sheet, income_statement, cash_flow)
+                translator = FinancialReportTranslator(symbol)
+                translator.get_financial_statements()
+                translator.translate_financial_statements()
+                translator.display_financial_statements()
             elif time_range == '季報':
-                quarterly_balance_sheet, quarterly_income_statement, quarterly_cash_flow = financial_statements_quarterly(symbol)
-                display_financial_statements_quarterly(quarterly_balance_sheet, quarterly_income_statement, quarterly_cash_flow)
-              
+                translator_quarterly = FinancialReportTranslatorQuarterly(symbol)
+                translator_quarterly.get_quarterly_financial_statements()
+                translator_quarterly.translate_quarterly_financial_statements()
+                translator_quarterly.display_quarterly_financial_statements()
+
     elif  options == '交易數據':
         with st.expander("展開輸入參數"):
-            range = st.selectbox('長期/短期', ['長期', '短期'])
+            range = st.selectbox('長期/短期', ['長期', '短期', '自訂日期'])
+            symbol = st.text_input("輸入美股代碼").upper()
+            
             if range == '長期':
-                symbol = st.text_input("輸入美股代碼").upper()
                 time_range = st.selectbox('選擇時長', ['1年', '2年', '5年', '10年', '全部'])
                 if time_range == '1年':
                     period = '1y'
@@ -510,79 +699,66 @@ def app():
                     period_days = 252 * 10
                 elif time_range == '全部':
                     period = 'max'
-                    period_days = None  # 使用全部数据的长度
-
+                    period_days = None
+            
             elif range == '短期':
-                symbol = st.text_input("輸入美股代碼").upper()
-                time_range = st.selectbox('選擇時長',['1個月','3個月','6個月'])
+                time_range = st.selectbox('選擇時長', ['1個月', '3個月', '6個月'])
                 if time_range == '1個月':
                     period = '1mo'
-                    period_days = 21  # 一个月大约是21个交易日
-                elif time_range == '2個月':
-                    period = '2mo'
-                    period_days = 42
+                    period_days = 21
                 elif time_range == '3個月':
                     period = '3mo'
-                    period_days = 63  # 三个月大约是63个交易日
+                    period_days = 63
                 elif time_range == '6個月':
                     period = '6mo'
-                    period_days = 126  # 六个月大约是126个交易日
+                    period_days = 126
+            
+            elif range == '自訂日期':
+                start_date = st.date_input("開始日期")
+                end_date = st.date_input("結束日期")
+                time_range = f"{start_date}~{end_date}"
+                period = f"{start_date}:{end_date}"
+                period_days = (end_date - start_date).days + 1
+            
         if st.button("查詢"):
             if symbol:
-                # 获取股票数据
-                stock_data = get_stock_data(symbol, period)
-                st.header(f"{symbol}-{time_range}交易數據")
-                if stock_data is not None and not stock_data.empty:
-                    if period_days is None:
-                        period_days = len(stock_data)  # 更新 period_days 为 stock_data 的长度
-                    price_difference, percentage_difference = calculate_price_difference(stock_data, period_days)
-                    latest_close_price = stock_data.iloc[-1]["Adj Close"]
-                    highest_price = stock_data["High"].max()
-                    lowest_price = stock_data["Low"].min()
-                    col1, col2, col3, col4 = st.columns(4)
-                    with col1:
-                        st.metric("最新收盤價", f"${latest_close_price:.2f}")
-                    with col2:
-                        st.metric(f"{time_range}增長率", f"${price_difference:.2f}", f"{percentage_difference:+.2f}%")
-                    with col3:
-                        st.metric(f"{time_range}最高價", f"${highest_price:.2f}")
-                    with col4:
-                        st.metric(f"{time_range}最低價", f"${lowest_price:.2f}")
-                    st.subheader(f"{symbol}-{time_range}K線圖表")
-                    fig = go.Figure()
-                    fig = plotly.subplots.make_subplots(rows=4, cols=1,shared_xaxes=True,vertical_spacing=0.01,row_heights=[0.8,0.5,0.5,0.5])
-                    mav5 = stock_data['Adj Close'].rolling(window=5).mean()  # 5日mav
-                    mav20 = stock_data['Adj Close'].rolling(window=20).mean()  # 20日mav
-                    mav60 = stock_data['Adj Close'].rolling(window=60).mean()  # 60日mav
-                    rsi = RSIIndicator(close=stock_data['Adj Close'], window=14)
-                    macd = MACD(close=stock_data['Adj Close'],window_slow=26,window_fast=12, window_sign=9)
-                    fig.add_trace(go.Candlestick(x=stock_data.index,open=stock_data['Open'],high=stock_data['High'],low=stock_data['Low'],close=stock_data['Adj Close'],),row=1,col=1)
-                    fig.update_layout(xaxis_rangeslider_visible=False)
-                    fig.add_trace(go.Scatter(x=stock_data.index, y=mav5, opacity=0.7, line=dict(color='blue', width=2), name='MAV-5'), row=1, col=1)
-                    fig.add_trace(go.Scatter(x=stock_data.index, y=mav20, opacity=0.7,line=dict(color='orange', width=2), name='MAV-20'), row=1, col=1)
-                    fig.add_trace(go.Scatter(x=stock_data.index, y=mav60,  opacity=0.7, line=dict(color='purple', width=2),name='MAV-60'), row=1, col=1)
-                    # Plot volume trace on 2nd row
-                    colors = ['green' if row['Open'] - row['Adj Close'] >= 0 else 'red' for index, row in stock_data.iterrows()]
-                    fig.add_trace(go.Bar(x=stock_data.index,y=stock_data['Volume'],marker_color=colors,name='Volume'),row=2, col=1)
-                    # Plot RSI trace on 5th row
-                    fig.add_trace(go.Scatter(x=stock_data.index,y=rsi.rsi(),line=dict(color='purple',width=2)),row=3,col=1)
-                    fig.add_trace(go.Scatter(x=stock_data.index,y=[70]*len(stock_data.index),line=dict(color='red', width=1),name='Overbought'), row=3, col=1)
-                    fig.add_trace(go.Scatter(x=stock_data.index,y=[30]*len(stock_data.index),line=dict(color='green', width=1),name='Oversold'), row=3, col=1)
-                     # Plot MACD trace on 3rd row
-                    colorsM = ['green' if val >= 0 else 'red' for val in macd.macd_diff()]
-                    fig.add_trace(go.Bar(x=stock_data.index,y=macd.macd_diff(),marker_color=colorsM),row=4,col=1)
-                    fig.add_trace(go.Scatter(x=stock_data.index,y=macd.macd(),line=dict(color='orange', width=2)),row=4,col=1)
-                    fig.add_trace(go.Scatter(x=stock_data.index,y=macd.macd_signal(),line=dict(color='blue', width=1)),row=4,col=1)
-                    fig.update_yaxes(title_text="Price", row=1, col=1)
-                    fig.update_yaxes(title_text="Volume", row=2, col=1)
-                    fig.update_yaxes(title_text="RSI", row=3, col=1)
-                    fig.update_yaxes(title_text="MACD", row=4, col=1)
-                    st.plotly_chart(fig,use_container_width=True)
-                else:
-                    st.error(f'查無{symbol}數據')
-                with st.expander(f'展開{symbol}-{time_range}數據'):
-                    st.dataframe(stock_data)
-    
+                    # Get stock data
+                    analyzer = StockAnalyzer(symbol)
+                    if range == '長期':
+                        stock_data = analyzer.get_stock_data_range(period=period)
+                    elif range == '短期':
+                        stock_data = analyzer.get_stock_data_range(period=period)
+                    elif range == '自訂日期':
+                        stock_data = analyzer.get_stock_data(start_date=start_date,end_date=end_date)
+                    
+                    st.header(f"{symbol} - {time_range} 交易數據")
+                    if stock_data is not None and not stock_data.empty:
+                        if period_days is None:
+                            period_days = len(stock_data)
+                            price_difference, percentage_difference = analyzer.calculate_price_difference(period_days)
+                            latest_close_price = stock_data.iloc[-1]["Adj Close"]
+                            highest_price = stock_data["High"].max()
+                            lowest_price = stock_data["Low"].min()
+                            
+                            col1, col2, col3, col4 = st.columns(4)
+                            with col1:
+                                st.metric("最新收盤價", f"${latest_close_price:.2f}")
+                            with col2:
+                                if price_difference is not None and percentage_difference is not None:
+                                    st.metric(f"{time_range}增長率", f"${price_difference:.2f}", f"{percentage_difference:+.2f}%")
+                                else:
+                                    st.metric(f"{time_range}增長率", "N/A", "N/A")
+                            with col3:
+                                st.metric(f"{time_range}最高價", f"${highest_price:.2f}")
+                            with col4:
+                                st.metric(f"{time_range}最低價", f"${lowest_price:.2f}")
+                            st.subheader(f"{symbol} - {time_range} K線圖表")
+                            analyzer.plot_stock_data()  # Call to plot the data
+                    else:
+                        st.error(f'查無{symbol}數據')
+                        with st.expander(f'展開{symbol} - {time_range}數據'):
+                            st.dataframe(stock_data)
+
     elif  options == '機構買賣':
         symbol = st.text_input('輸入美股代號').upper()
         if st.button('查詢'):
@@ -606,8 +782,6 @@ def app():
                     st.markdown(f"[資料來源](https://finviz.com/quote.ashx?t={symbol})")
                 else:
                     st.write(f"查無{symbol}近期相關消息")
-
-
 
 if __name__ == "__main__":
     app()
