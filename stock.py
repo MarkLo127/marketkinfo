@@ -220,7 +220,6 @@ class StockAnalyzer:
         st.table(df)
 
 # 4.公司財報
-
 #年報
 class FinancialReportTranslator:
     def __init__(self, symbol, target_language='zh-TW'):
@@ -388,17 +387,68 @@ class FinancialReportTranslatorQuarterly:
             st.table(self.quarterly_cash_flow)
 
 # 5.交易數據
-def get_stock_data(symbol,time_range):
-    stock_data = yf.download(symbol,period=time_range)
-    return stock_data
+class plot_stock_data:
+    
+    @staticmethod
+    def get_stock_data(symbol, time_range):
+        stock_data = yf.download(symbol, period=time_range)
+        return stock_data
 
-# 计算价格差异的函数
-def calculate_price_difference(stock_data, period_days):
-    latest_price = stock_data.iloc[-1]["Adj Close"]  # 获取最新的收盘价
-    previous_price = stock_data.iloc[-period_days]["Adj Close"] if len(stock_data) > period_days else stock_data.iloc[0]["Adj Close"]  # 获取特定天数前的收盘价
-    price_difference = latest_price - previous_price  # 计算价格差异
-    percentage_difference = (price_difference / previous_price) * 100  # 计算百分比变化
-    return price_difference, percentage_difference  # 返回价格差异和百分比变化
+    # 計算價格差異的函數
+    @staticmethod
+    def calculate_price_difference(stock_data, period_days):
+        latest_price = stock_data.iloc[-1]["Adj Close"]  # 最新收盤價
+        previous_price = stock_data.iloc[-period_days]["Adj Close"] if len(stock_data) > period_days else stock_data.iloc[0]["Adj Close"]  # 特定天數前的收盤價
+        price_difference = latest_price - previous_price  # 計算價格差異
+        percentage_difference = (price_difference / previous_price) * 100  # 計算百分比變化
+        return price_difference, percentage_difference  # 返回價格差異和百分比變化
+
+    # 繪製K線圖
+    @staticmethod
+    def plot_kline(stock_data):
+        fig = plotly.subplots.make_subplots(rows=4, cols=1, shared_xaxes=True, vertical_spacing=0.01, row_heights=[0.8, 0.5, 0.5, 0.5])
+        
+        mav5 = stock_data['Adj Close'].rolling(window=5).mean()  # 5日MAV
+        mav20 = stock_data['Adj Close'].rolling(window=20).mean()  # 20日MAV
+        mav60 = stock_data['Adj Close'].rolling(window=60).mean()  # 60日MAV
+        
+        rsi = RSIIndicator(close=stock_data['Adj Close'], window=14)
+        macd = MACD(close=stock_data['Adj Close'], window_slow=26, window_fast=12, window_sign=9)
+
+        # K線圖
+        fig.add_trace(go.Candlestick(x=stock_data.index, open=stock_data['Open'], high=stock_data['High'], low=stock_data['Low'], close=stock_data['Adj Close']), row=1, col=1)
+        fig.update_layout(xaxis_rangeslider_visible=False)
+
+        # 移動平均線
+        fig.add_trace(go.Scatter(x=stock_data.index, y=mav5, line=dict(color='blue', width=2), name='MAV-5', showlegend=False), row=1, col=1)
+        fig.add_trace(go.Scatter(x=stock_data.index, y=mav20, line=dict(color='orange', width=2), name='MAV-20', showlegend=False), row=1, col=1)
+        fig.add_trace(go.Scatter(x=stock_data.index, y=mav60, line=dict(color='purple', width=2), name='MAV-60', showlegend=False), row=1, col=1)
+
+        # 成交量
+        colors = ['green' if row['Open'] - row['Adj Close'] >= 0 else 'red' for _, row in stock_data.iterrows()]
+        fig.add_trace(go.Bar(x=stock_data.index, y=stock_data['Volume'], marker_color=colors, name='Volume', showlegend=False), row=2, col=1)
+
+        # RSI
+        fig.add_trace(go.Scatter(x=stock_data.index, y=rsi.rsi(), line=dict(color='purple', width=2), showlegend=False), row=3, col=1)
+        fig.add_trace(go.Scatter(x=stock_data.index, y=[70]*len(stock_data.index), line=dict(color='red', width=1), name='Overbought', showlegend=False), row=3, col=1)
+        fig.add_trace(go.Scatter(x=stock_data.index, y=[30]*len(stock_data.index), line=dict(color='green', width=1), name='Oversold', showlegend=False), row=3, col=1)
+
+        # MACD
+        colorsM = ['green' if val >= 0 else 'red' for val in macd.macd_diff()]
+        fig.add_trace(go.Bar(x=stock_data.index, y=macd.macd_diff(), marker_color=colorsM, showlegend=False), row=4, col=1)
+        fig.add_trace(go.Scatter(x=stock_data.index, y=macd.macd(), line=dict(color='orange', width=2), showlegend=False), row=4, col=1)
+        fig.add_trace(go.Scatter(x=stock_data.index, y=macd.macd_signal(), line=dict(color='blue', width=1), showlegend=False), row=4, col=1)
+
+        # 設置Y軸標題
+        fig.update_yaxes(title_text="Price", row=1, col=1)
+        fig.update_yaxes(title_text="Volume", row=2, col=1)
+        fig.update_yaxes(title_text="RSI", row=3, col=1)
+        fig.update_yaxes(title_text="MACD", row=4, col=1)
+
+        # 隱藏圖例
+        fig.update_layout(showlegend=False)
+
+        st.plotly_chart(fig, use_container_width=True)
 
 # 6.機構評級
 def scrape_and_plot_finviz_data(symbol):
@@ -537,16 +587,16 @@ def app():
     ''')
 
     if  options == '大盤指數':
-        period = st.selectbox('選擇時長',['年初至今','1年','2年','5年','10年','全部'])
+        period = st.selectbox('選擇時長',['年初至今','1年','3年','5年','10年','全部'])
         if period == '年初至今':
             period = 'ytd'
             time = '年初至今'
         elif period == '1年':
             period = '1y'
             time = '1年'
-        elif period == '2年':
-            period = '2y'
-            time = '2年'
+        elif period == '3年':
+            period = '3y'
+            time = '3年'
         elif period == '5年':
             period = '5y'
             time = '5年'
@@ -617,13 +667,13 @@ def app():
             range = st.selectbox('長期/短期', ['長期', '短期'])
             if range == '長期':
                 symbol = st.text_input("輸入美股代碼").upper()
-                time_range = st.selectbox('選擇時長', ['1年', '2年', '5年', '10年', '全部'])
+                time_range = st.selectbox('選擇時長', ['1年', '3年', '5年', '10年', '全部'])
                 if time_range == '1年':
                     period = '1y'
                     period_days = 252
-                elif time_range == '2年':
-                    period = '2y'
-                    period_days = 252 * 2
+                elif time_range == '3年':
+                    period = '3y'
+                    period_days = 252 * 3
                 elif time_range == '5年':
                     period = '5y'
                     period_days = 252 * 5
@@ -652,15 +702,18 @@ def app():
         if st.button("查詢"):
             if symbol:
                 # 获取股票数据
-                stock_data = get_stock_data(symbol, period)
-                st.header(f"{symbol}-{time_range}交易數據")
+                stock_data = plot_stock_data.get_stock_data(symbol, period)
+                st.subheader(f"{symbol}-{time_range}交易數據")
                 if stock_data is not None and not stock_data.empty:
                     if period_days is None:
                         period_days = len(stock_data)  # 更新 period_days 为 stock_data 的长度
-                    price_difference, percentage_difference = calculate_price_difference(stock_data, period_days)
+                    price_difference, percentage_difference = plot_stock_data.calculate_price_difference(stock_data, period_days)
+                    
                     latest_close_price = stock_data.iloc[-1]["Adj Close"]
+                    
                     highest_price = stock_data["High"].max()
                     lowest_price = stock_data["Low"].min()
+
                     col1, col2, col3, col4 = st.columns(4)
                     with col1:
                         st.metric("最新收盤價", f"${latest_close_price:.2f}")
@@ -671,35 +724,7 @@ def app():
                     with col4:
                         st.metric(f"{time_range}最低價", f"${lowest_price:.2f}")
                     st.subheader(f"{symbol}-{time_range}K線圖表")
-                    fig = go.Figure()
-                    fig = plotly.subplots.make_subplots(rows=4, cols=1,shared_xaxes=True,vertical_spacing=0.01,row_heights=[0.8,0.5,0.5,0.5])
-                    mav5 = stock_data['Adj Close'].rolling(window=5).mean()  # 5日mav
-                    mav20 = stock_data['Adj Close'].rolling(window=20).mean()  # 20日mav
-                    mav60 = stock_data['Adj Close'].rolling(window=60).mean()  # 60日mav
-                    rsi = RSIIndicator(close=stock_data['Adj Close'], window=14)
-                    macd = MACD(close=stock_data['Adj Close'],window_slow=26,window_fast=12, window_sign=9)
-                    fig.add_trace(go.Candlestick(x=stock_data.index,open=stock_data['Open'],high=stock_data['High'],low=stock_data['Low'],close=stock_data['Adj Close'],),row=1,col=1)
-                    fig.update_layout(xaxis_rangeslider_visible=False)
-                    fig.add_trace(go.Scatter(x=stock_data.index, y=mav5, opacity=0.7, line=dict(color='blue', width=2), name='MAV-5'), row=1, col=1)
-                    fig.add_trace(go.Scatter(x=stock_data.index, y=mav20, opacity=0.7,line=dict(color='orange', width=2), name='MAV-20'), row=1, col=1)
-                    fig.add_trace(go.Scatter(x=stock_data.index, y=mav60,  opacity=0.7, line=dict(color='purple', width=2),name='MAV-60'), row=1, col=1)
-                    # Plot volume trace on 2nd row
-                    colors = ['green' if row['Open'] - row['Adj Close'] >= 0 else 'red' for index, row in stock_data.iterrows()]
-                    fig.add_trace(go.Bar(x=stock_data.index,y=stock_data['Volume'],marker_color=colors,name='Volume'),row=2, col=1)
-                    # Plot RSI trace on 5th row
-                    fig.add_trace(go.Scatter(x=stock_data.index,y=rsi.rsi(),line=dict(color='purple',width=2)),row=3,col=1)
-                    fig.add_trace(go.Scatter(x=stock_data.index,y=[70]*len(stock_data.index),line=dict(color='red', width=1),name='Overbought'), row=3, col=1)
-                    fig.add_trace(go.Scatter(x=stock_data.index,y=[30]*len(stock_data.index),line=dict(color='green', width=1),name='Oversold'), row=3, col=1)
-                     # Plot MACD trace on 3rd row
-                    colorsM = ['green' if val >= 0 else 'red' for val in macd.macd_diff()]
-                    fig.add_trace(go.Bar(x=stock_data.index,y=macd.macd_diff(),marker_color=colorsM),row=4,col=1)
-                    fig.add_trace(go.Scatter(x=stock_data.index,y=macd.macd(),line=dict(color='orange', width=2)),row=4,col=1)
-                    fig.add_trace(go.Scatter(x=stock_data.index,y=macd.macd_signal(),line=dict(color='blue', width=1)),row=4,col=1)
-                    fig.update_yaxes(title_text="Price", row=1, col=1)
-                    fig.update_yaxes(title_text="Volume", row=2, col=1)
-                    fig.update_yaxes(title_text="RSI", row=3, col=1)
-                    fig.update_yaxes(title_text="MACD", row=4, col=1)
-                    st.plotly_chart(fig,use_container_width=True)
+                    plot_stock_data.plot_kline(stock_data)
                 else:
                     st.error(f'查無{symbol}數據')
                 with st.expander(f'展開{symbol}-{time_range}數據'):
