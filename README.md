@@ -26,7 +26,19 @@
 
 ### 1. 克隆專案
 
-'''bash
+```bash
 git clone https://github.com/MarkLo127/marketkinfo.git
+```
 
 ### 2. 進入專案目錄
+```bash
+cd marketkinfo
+```
+### 3. 安裝所需的依賴
+```bash
+pip install -r requirements.txt
+```
+### 4. 啟動應用程式
+```bash
+streamlit run stock.py
+```
