@@ -24,9 +24,11 @@
 
 請按照以下步驟安裝專案：
 
-克隆此專案：
    ```bash
    git clone https://github.com/MarkLo127/marketkinfo.git
 
+cd marketkinfo
 
-下載套件：
+pip install -r requirements.txt
+
+streamlit run stock.py
