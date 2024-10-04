@@ -20,5 +20,5 @@
 
 克隆此專案：
    ```bash
-   git clone https://github.com/你的用戶名/專案名稱.git
+   git clone https://github.com/MarkLo127/marketkinfo.git
 
