@@ -763,16 +763,16 @@ def app():
     ''')
 
     if  options == '大盤指數':
-        period = st.selectbox('選擇時長',['年初至今','1年','3年','5年','10年','全部'])
+        period = st.selectbox('選擇時長',['年初至今','1年','2年','5年','10年','全部'])
         if period == '年初至今':
             period = 'ytd'
             time = '年初至今'
         elif period == '1年':
             period = '1y'
             time = '1年'
-        elif period == '3年':
-            period = '3y'
-            time = '3年'
+        elif period == '2年':
+            period = '2y'
+            time = '2年'
         elif period == '5年':
             period = '5y'
             time = '5年'
@@ -854,13 +854,13 @@ def app():
             range = st.selectbox('長期/短期', ['長期', '短期','自訂範圍'])
             if range == '長期':
                 symbol = st.text_input("輸入美股代碼").upper()
-                time_range = st.selectbox('選擇時長', ['1年', '3年', '5年', '10年', '全部'])
+                time_range = st.selectbox('選擇時長', ['1年', '2年', '5年', '10年', '全部'])
                 if time_range == '1年':
                     period = '1y'
                     period_days = 252
-                elif time_range == '3年':
-                    period = '3y'
-                    period_days = 252 * 3
+                elif time_range == '2年':
+                    period = '2y'
+                    period_days = 252 * 2
                 elif time_range == '5年':
                     period = '5y'
                     period_days = 252 * 5
@@ -873,8 +873,11 @@ def app():
 
             elif range == '短期':
                 symbol = st.text_input("輸入美股代碼").upper()
-                time_range = st.selectbox('選擇時長',['1個月','3個月','6個月'])
-                if time_range == '1個月':
+                time_range = st.selectbox('選擇時長',['年初至今','1個月','3個月','6個月'])
+                if time_range == '年初至今':
+                    period = 'ytd'
+                    period_days = None
+                elif time_range == '1個月':
                     period = '1mo'
                     period_days = 21  # 一个月大约是21个交易日
                 elif time_range == '2個月':
