@@ -755,13 +755,13 @@ def app():
     st.sidebar.title('📊 Menu')
     options = st.sidebar.selectbox('選擇功能', ['大盤指數','公司基本資訊','公司經營狀況','公司財報','交易數據','期權數據','SEC文件','機構買賣','近期相關消息'])
     st.sidebar.markdown('''
-### 免責聲明：
-1. **K 線圖觀看角度**  
-   - 綠漲、紅跌  
-2. 本平台僅適用於數據搜尋，不建議任何投資行為  
-3. 排版問題建議使用電腦查詢數據  
-4. 其他專案：[StockSearch](https://marketsearch.streamlit.app)  
-''')
+    ### 免責聲明：
+    1. **K 線圖觀看角度**  
+    - 綠漲、紅跌  
+    2. 本平台僅適用於數據搜尋，不建議任何投資行為  
+    3. 排版問題建議使用電腦查詢數據  
+    4. 其他專案：[StockSearch](https://marketsearch.streamlit.app)  
+    ''')
 
 
     if  options == '大盤指數':
