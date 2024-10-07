@@ -101,8 +101,8 @@ class plotindex:
         prices = yf.download(tickers)['Adj Close'].dropna()
         prices = prices.reset_index().melt(id_vars='Date', var_name='Ticker', value_name='Price')
         
-        for currency, rate in exchange_rates.items():
-            prices.loc[prices['Ticker'] == tickers, 'Price'] *= rate
+        for ticker,rate in exchange_rates.items():
+            prices.loc[prices['Ticker'] == ticker, 'Price'] *= rate
 
         fig = px.line(prices, x='Date', y='Price', color='Ticker')
         st.plotly_chart(fig)
