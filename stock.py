@@ -94,7 +94,7 @@ class plotindex:
         fig.update_layout(height=500, width=1000, showlegend=False)
         st.plotly_chart(fig)
         
-   def plot_foreign_vs(self):
+    def plot_foreign_vs(self):
         st.subheader(f'美股大盤＆海外大盤{self.time}走勢比較')
         tickers = self.symbols['foreign']
         
