@@ -94,21 +94,12 @@ class plotindex:
         fig.update_layout(height=500, width=1000, showlegend=False)
         st.plotly_chart(fig)
         
-    def plot_foreign_vs(self):
-        st.subheader(f'美股大盤＆海外大盤{self.time}走勢比較(換算美金)')
+   def plot_foreign_vs(self):
+        st.subheader(f'美股大盤＆海外大盤{self.time}走勢比較')
         tickers = self.symbols['foreign']
         
-        c = CurrencyRates()
         prices = yf.download(tickers)['Adj Close'].dropna()
         prices = prices.reset_index().melt(id_vars='Date', var_name='Ticker', value_name='Price')
-        
-        currencies = {'^HSI': 'HKD','399001.SZ': 'CNY','^TWII': 'TWD','^N225': 'JPY'}
-        
-        for ticker in prices['Ticker'].unique():
-            currency = currencies.get(ticker, 'USD')  # 如果 ticker 不在字典中，預設為 USD
-            if currency != 'USD':  # 如果不是美元則進行轉換
-                rate = c.get_rate(currency, 'USD')
-                prices.loc[prices['Ticker'] == ticker, 'Price'] *= rate
         
         fig = px.line(prices, x='Date', y='Price', color='Ticker')
         st.plotly_chart(fig)
