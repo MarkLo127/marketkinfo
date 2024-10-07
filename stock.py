@@ -68,7 +68,7 @@ class plotindex:
         prices = yf.download(tickers)['Adj Close'].dropna()
         prices = prices.reset_index().melt(id_vars='Date', var_name='Ticker', value_name='Price')
         fig = px.line(prices, x='Date', y='Price', color='Ticker')
-        fig.update_layout(showlegend=False)
+        fig.update_layout(height=500, width=1000, showlegend=False)
         st.plotly_chart(fig)
 
     def plot_foreign(self):
@@ -89,7 +89,7 @@ class plotindex:
             else:
                 fig.add_trace(go.Scatter(x=self.data[symbol].index, y=self.data[symbol].values, mode='lines', name=symbol), row=row, col=col)
 
-        fig.update_layout(height=1000, width=1000, showlegend=False)
+        fig.update_layout(height=500, width=1000, showlegend=False)
         st.plotly_chart(fig)
         
     def plot_foreign_vs(self):
@@ -98,7 +98,7 @@ class plotindex:
         prices = yf.download(tickers)['Adj Close'].dropna()
         prices = prices.reset_index().melt(id_vars='Date', var_name='Ticker', value_name='Price')
         fig = px.line(prices, x='Date', y='Price', color='Ticker')
-        fig.update_layout(showlegend=False)
+        fig.update_layout(height=1000, width=1000, showlegend=False)
         st.plotly_chart(fig)
         
     def plot(self):
