@@ -5,7 +5,6 @@ import csv
 
 # 資料擷取與網路相關
 import yfinance as yf  # 股票數據
-from forex_python.converter import CurrencyRates
 import requests as res  # HTTP 請求
 from bs4 import BeautifulSoup  # 網頁解析
 
@@ -86,8 +85,8 @@ class plotindex:
             
             # Apply conversion for foreign indexes
             if symbol in ['^HSI', '399001.SZ', '^TWII', '^N225']:  
-                conversion_factor = {'^HSI': 0.1382, '399001.SZ': 0.1382, '^TWII': 0.0308, '^N225': 0.0064}
-                fig.add_trace(go.Scatter(x=self.data[symbol].index, y=(self.data[symbol] * conversion_factor[symbol]).values, mode='lines', name=symbol), row=row, col=col)
+                exchange_rates = {'^HSI': 0.1382, '399001.SZ': 0.1382, '^TWII': 0.0308, '^N225': 0.0067}
+                fig.add_trace(go.Scatter(x=self.data[symbol].index, y=(self.data[symbol] * exchange_rates[symbol]).values, mode='lines', name=symbol), row=row, col=col)
             else:
                 fig.add_trace(go.Scatter(x=self.data[symbol].index, y=self.data[symbol].values, mode='lines', name=symbol), row=row, col=col)
 
@@ -98,6 +97,10 @@ class plotindex:
         st.subheader(f'美股大盤＆海外大盤{self.time}走勢比較')
         tickers = self.symbols['foreign']
         
+        exchange_rates = {'^HSI': 0.1382, '399001.SZ': 0.1382, '^TWII': 0.0308, '^N225': 0.0067}
+        for currency, rate in exchange_rates.items():
+            prices.loc[prices['Ticker'].str.contains(currency), 'Price'] *= rate
+
         prices = yf.download(tickers)['Adj Close'].dropna()
         prices = prices.reset_index().melt(id_vars='Date', var_name='Ticker', value_name='Price')
         
