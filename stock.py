@@ -801,7 +801,6 @@ def app():
         # 繪製大盤指數
         pltindex = plotindex(period, time, plot_type='index')
         pltindex.plot()
-        pltindex.plot_index_vs()
         with st.expander(f'展開{time}大盤指數數據'):
             data = pltindex.data
             data = pd.DataFrame(data)
@@ -809,7 +808,6 @@ def app():
         # 繪製海外大盤
         pltforeign = plotindex(period, time, plot_type='foreign')
         pltforeign.plot()
-        pltforeign.plot_foreign_vs()
         with st.expander(f'展開{time}海外大盤指數數據'):
             data = pltforeign.data
             data = pd.DataFrame(data)
