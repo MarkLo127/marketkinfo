@@ -5,6 +5,7 @@ import csv
 
 # 資料擷取與網路相關
 import yfinance as yf  # 股票數據
+from forex_python.converter import CurrencyRates
 import requests as res  # HTTP 請求
 from bs4 import BeautifulSoup  # 網頁解析
 
@@ -94,12 +95,20 @@ class plotindex:
         st.plotly_chart(fig)
         
     def plot_foreign_vs(self):
-        st.subheader(f'美股大盤＆海外大盤{self.time}走勢比較')
+        st.subheader(f'美股大盤＆海外大盤{self.time}走勢比較(換算美金)')
         tickers = self.symbols['foreign']
         
+        c = CurrencyRates()
         prices = yf.download(tickers)['Adj Close'].dropna()
+        
         prices = prices.reset_index().melt(id_vars='Date', var_name='Ticker', value_name='Price')
         
+        for ticker in prices['Ticker'].unique():
+            currency = self.get_currency_from_ticker(ticker)  
+            if currency != 'USD':
+                rate = c.get_rate(currency, 'USD')
+                prices.loc[prices['Ticker'] == ticker, 'Price'] *= rate
+                
         fig = px.line(prices, x='Date', y='Price', color='Ticker')
         st.plotly_chart(fig)
         
