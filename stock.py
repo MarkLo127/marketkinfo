@@ -761,6 +761,7 @@ def app():
     2. 本平台僅適用於數據搜尋，不建議任何投資行為
     3. 排版問題建議使用電腦查詢數據  
     ''')
+    st.sidebarmarkdown(f"[StockSearch](https://marketsearch.streamlit.app)")
 
     if  options == '大盤指數':
         period = st.selectbox('選擇時長',['年初至今','1年','2年','5年','10年','全部'])
