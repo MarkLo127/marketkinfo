@@ -61,7 +61,7 @@ class plotindex:
 
         fig.update_layout(showlegend=False)
         st.plotly_chart(fig)
-        #height=1000, width=1000,
+
     
     def plot_index_vs(self):
         st.subheader(f'美股大盤＆中小企業{self.time}走勢比較')
@@ -92,7 +92,7 @@ class plotindex:
             else:
                 fig.add_trace(go.Scatter(x=self.data[symbol].index, y=self.data[symbol].values, mode='lines', name=symbol), row=row, col=col)
 
-        fig.update_layout(height=500, width=1000, showlegend=False)
+        fig.update_layout(showlegend=False)
         st.plotly_chart(fig)
         
     def plot_foreign_vs(self):
@@ -575,8 +575,8 @@ class Holding:
                 title=f'機構持股{symbol.ticker}比例與價值',
                 xaxis_title='機構',
                 yaxis_title='持股比例 (%)',
-                height=800,
-                width=1200
+                #height=800,
+                #width=1200
             )
             st.plotly_chart(fig, use_container_width=True)
         else:
@@ -615,8 +615,8 @@ class Holding:
                 title=f'共同基金持股{symbol.ticker}比例與價值',
                 xaxis_title='共同基金',
                 yaxis_title='持股比例 (%)',
-                height=800,
-                width=1200
+                #height=800,
+                #width=1200
             )
             st.plotly_chart(fig, use_container_width=True)
         else:
@@ -696,8 +696,8 @@ class Holding:
             yaxis_title='機構',
             yaxis=dict(type='category'),
             showlegend=False,
-            height=800,
-            width=1200
+            #height=800,
+            #width=1200
         )
 
         # 可視化 2：評級變化的分佈，使用不同顏色
@@ -710,8 +710,8 @@ class Holding:
             )  # 明確排序順序
         
         fig2.update_layout(
-            height=800,
-            width=1200,
+            #height=800,
+            #width=1200,
             showlegend=False  # 隱藏圖例
             )
         
