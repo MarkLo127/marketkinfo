@@ -96,14 +96,14 @@ class plotindex:
     def plot_foreign_vs(self):
         st.subheader(f'美股大盤＆海外大盤{self.time}走勢比較')
         tickers = self.symbols['foreign']
-        
         exchange_rates = {'^HSI': 0.1382, '399001.SZ': 0.1382, '^TWII': 0.0308, '^N225': 0.0067}
-        for currency, rate in exchange_rates.items():
-            prices.loc[prices['Ticker'].str.contains(currency), 'Price'] *= rate
 
         prices = yf.download(tickers)['Adj Close'].dropna()
         prices = prices.reset_index().melt(id_vars='Date', var_name='Ticker', value_name='Price')
         
+        for currency, rate in exchange_rates.items():
+            prices.loc[prices['Ticker'].str.contains(currency), 'Price'] *= rate
+
         fig = px.line(prices, x='Date', y='Price', color='Ticker')
         st.plotly_chart(fig)
         
