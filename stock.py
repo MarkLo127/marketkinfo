@@ -574,9 +574,7 @@ class Holding:
             fig.update_layout(
                 title=f'機構持股{symbol.ticker}比例與價值',
                 xaxis_title='機構',
-                yaxis_title='持股比例 (%)',
-                #height=800,
-                #width=1200
+                yaxis_title='持股比例 (%)'
             )
             st.plotly_chart(fig, use_container_width=True)
         else:
@@ -614,9 +612,7 @@ class Holding:
             fig.update_layout(
                 title=f'共同基金持股{symbol.ticker}比例與價值',
                 xaxis_title='共同基金',
-                yaxis_title='持股比例 (%)',
-                #height=800,
-                #width=1200
+                yaxis_title='持股比例 (%)'
             )
             st.plotly_chart(fig, use_container_width=True)
         else:
@@ -695,9 +691,7 @@ class Holding:
             xaxis_title='目標價格',
             yaxis_title='機構',
             yaxis=dict(type='category'),
-            showlegend=False,
-            #height=800,
-            #width=1200
+            showlegend=False
         )
 
         # 可視化 2：評級變化的分佈，使用不同顏色
@@ -709,12 +703,8 @@ class Holding:
             category_orders={'Rating Change': rating_order}
             )  # 明確排序順序
         
-        fig2.update_layout(
-            #height=800,
-            #width=1200,
-            showlegend=False  # 隱藏圖例
-            )
-        
+        fig2.update_layout(showlegend=False)
+    
         # 顯示圖表
         st.plotly_chart(fig1)
         st.plotly_chart(fig2)
