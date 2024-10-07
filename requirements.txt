@@ -11,3 +11,4 @@ geopy>=2.4.1
 numpy>=1.26.0
 beautifulsoup4>=4.12.0
 deep-translator>=1.11.0
+forex-python >= 1.5
