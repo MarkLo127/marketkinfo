@@ -102,7 +102,7 @@ class plotindex:
         prices = prices.reset_index().melt(id_vars='Date', var_name='Ticker', value_name='Price')
         
         for currency, rate in exchange_rates.items():
-            prices.loc[prices['Ticker'].str.contains(currency), 'Price'] *= rate
+            prices.loc[prices['Ticker'] == ticker, 'Price'] *= rate
 
         fig = px.line(prices, x='Date', y='Price', color='Ticker')
         st.plotly_chart(fig)
