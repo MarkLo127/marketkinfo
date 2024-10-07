@@ -619,9 +619,7 @@ class Holding:
     def scrape_finviz(symbol):
         # 爬蟲部分
         url = f"https://finviz.com/quote.ashx?t={symbol}"
-        headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'
-        }
+        headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'}
         response = res.get(url, headers=headers)
 
         # 檢查請求是否成功
@@ -779,7 +777,6 @@ def app():
     4. 其他專案：[MarketSearch](https://marketsearch.streamlit.app)  
     ''')
 
-
     if  options == '大盤指數':
         period = st.selectbox('選擇時長',['年初至今','1年','2年','5年','10年','全部'])
         if period == '年初至今':
@@ -803,7 +800,7 @@ def app():
             
         # 繪製大盤指數
         pltindex = plotindex(period, time, plot_type='index')
-        pltindex.plot()
+        pltindex.plot_index()
         pltindex.plot_index_vs()
         with st.expander(f'展開{time}大盤指數數據'):
             data = pltindex.data
