@@ -800,7 +800,7 @@ def app():
             
         # 繪製大盤指數
         pltindex = plotindex(period, time, plot_type='index')
-        pltindex.plot_index()
+        pltindex.plot()
         pltindex.plot_index_vs()
         with st.expander(f'展開{time}大盤指數數據'):
             data = pltindex.data
