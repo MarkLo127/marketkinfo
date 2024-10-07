@@ -65,8 +65,10 @@ class plotindex:
     def plot_index_vs(self):
         st.subheader(f'美股大盤＆中小企業{self.time}走勢比較')
         tickers = self.symbols['index']
+        
         prices = yf.download(tickers)['Adj Close'].dropna()
         prices = prices.reset_index().melt(id_vars='Date', var_name='Ticker', value_name='Price')
+        
         fig = px.line(prices, x='Date', y='Price', color='Ticker')
         st.plotly_chart(fig)
 
@@ -94,8 +96,10 @@ class plotindex:
     def plot_foreign_vs(self):
         st.subheader(f'美股大盤＆海外大盤{self.time}走勢比較')
         tickers = self.symbols['foreign']
+        
         prices = yf.download(tickers)['Adj Close'].dropna()
         prices = prices.reset_index().melt(id_vars='Date', var_name='Ticker', value_name='Price')
+        
         fig = px.line(prices, x='Date', y='Price', color='Ticker')
         st.plotly_chart(fig)
         
