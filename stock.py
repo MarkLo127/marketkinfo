@@ -47,7 +47,7 @@ class plotindex:
     def fetch_data(self):
         """Fetch historical data for the selected indexes."""
         for symbol in self.symbols[self.plot_type]:
-            self.data[symbol] = yf.download(symbol, period=self.period)['Close']
+            self.data[symbol] = yf.download(symbol, period=self.period)['Adj Close']
 
     def plot_index(self):
         """Plot the US indexes."""
@@ -60,6 +60,14 @@ class plotindex:
             fig.add_trace(go.Scatter(x=self.data[symbol].index, y=self.data[symbol].values, mode='lines', name=symbol), row=(i // 2) + 1, col=(i % 2) + 1)
 
         fig.update_layout(height=1000, width=1000, showlegend=False)
+        st.plotly_chart(fig)
+    
+    def plot_index_vs(self):
+        st.subheader(f'美股大盤＆中小企業{self.time}走勢比較')
+        tickers = self.symbols['index']
+        prices = yf.download(tickers)['Adj Close'].dropna()
+        prices = prices.reset_index().melt(id_vars='Date', var_name='Ticker', value_name='Price')
+        fig = px.line(prices, x='Date', y='Price', color='Ticker')
         st.plotly_chart(fig)
 
     def plot_foreign(self):
@@ -82,14 +90,24 @@ class plotindex:
 
         fig.update_layout(height=1000, width=1000, showlegend=False)
         st.plotly_chart(fig)
-
+        
+    def plot_foreign_vs(self):
+        st.subheader(f'美股大盤＆海外大盤{self.time}走勢比較')
+        tickers = self.symbols['foreign']
+        prices = yf.download(tickers)['Adj Close'].dropna()
+        prices = prices.reset_index().melt(id_vars='Date', var_name='Ticker', value_name='Price')
+        fig = px.line(prices, x='Date', y='Price', color='Ticker')
+        st.plotly_chart(fig)
+        
     def plot(self):
         """Plot the financial data based on the selected type."""
         self.fetch_data()
         if self.plot_type == 'index':
             self.plot_index()
+            self.plot_index_vs()
         elif self.plot_type == 'foreign':
             self.plot_foreign()
+            self.plot_foreign_vs()
 
 #2.公司基本資訊
 class cominfo:
