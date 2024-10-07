@@ -760,7 +760,7 @@ def app():
     - 綠漲、紅跌  
     2. 本平台僅適用於數據搜尋，不建議任何投資行為  
     3. 排版問題建議使用電腦查詢數據  
-    4. 其他專案：[StockSearch](https://marketsearch.streamlit.app)  
+    4. 其他專案：[MarketSearch](https://marketsearch.streamlit.app)  
     ''')
 
 
