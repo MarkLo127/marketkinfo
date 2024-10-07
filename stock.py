@@ -70,6 +70,7 @@ class plotindex:
         prices = prices.reset_index().melt(id_vars='Date', var_name='Ticker', value_name='Price')
         
         fig = px.line(prices, x='Date', y='Price', color='Ticker')
+        fig.update_layout(showlegend=False)
         st.plotly_chart(fig)
 
     def plot_foreign(self):
@@ -105,6 +106,7 @@ class plotindex:
             prices.loc[prices['Ticker'] == ticker, 'Price'] *= rate
 
         fig = px.line(prices, x='Date', y='Price', color='Ticker')
+        fig.update_layout(showlegend=False)
         st.plotly_chart(fig)
         
     def plot(self):
