@@ -718,9 +718,7 @@ class Holding:
 class News:
     def getnews(self, symbol):
         url = f"https://finviz.com/quote.ashx?t={symbol}&p=d"
-        headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
-        }
+        headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"}
         
         # 發送請求並處理可能的錯誤
         try:
@@ -806,6 +804,7 @@ def app():
         # 繪製大盤指數
         pltindex = plotindex(period, time, plot_type='index')
         pltindex.plot()
+        pltindex.plot_index_vs()
         with st.expander(f'展開{time}大盤指數數據'):
             data = pltindex.data
             data = pd.DataFrame(data)
@@ -813,6 +812,7 @@ def app():
         # 繪製海外大盤
         pltforeign = plotindex(period, time, plot_type='foreign')
         pltforeign.plot()
+        pltforeign.plot_foreign_vs()
         with st.expander(f'展開{time}海外大盤指數數據'):
             data = pltforeign.data
             data = pd.DataFrame(data)
