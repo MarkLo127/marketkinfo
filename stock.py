@@ -59,7 +59,7 @@ class plotindex:
         for i, symbol in enumerate(self.symbols['index']):
             fig.add_trace(go.Scatter(x=self.data[symbol].index, y=self.data[symbol].values, mode='lines', name=symbol), row=(i // 2) + 1, col=(i % 2) + 1)
 
-        fig.update_layout(showlegend=False, width=800, height=600)
+        fig.update_layout(showlegend=False)
         st.plotly_chart(fig)
 
     
@@ -92,7 +92,7 @@ class plotindex:
             else:
                 fig.add_trace(go.Scatter(x=self.data[symbol].index, y=self.data[symbol].values, mode='lines', name=symbol), row=row, col=col)
 
-        fig.update_layout(showlegend=False, width=800, height=600)
+        fig.update_layout(showlegend=False)
         st.plotly_chart(fig)
         
     def plot_foreign_vs(self):
