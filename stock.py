@@ -59,8 +59,9 @@ class plotindex:
         for i, symbol in enumerate(self.symbols['index']):
             fig.add_trace(go.Scatter(x=self.data[symbol].index, y=self.data[symbol].values, mode='lines', name=symbol), row=(i // 2) + 1, col=(i % 2) + 1)
 
-        fig.update_layout(height=1000, width=1000, showlegend=False)
+        fig.update_layout(showlegend=False)
         st.plotly_chart(fig)
+        #height=1000, width=1000,
     
     def plot_index_vs(self):
         st.subheader(f'美股大盤＆中小企業{self.time}走勢比較')
