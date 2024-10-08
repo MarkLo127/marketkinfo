@@ -80,44 +80,33 @@ class plotindex:
         fig = px.line(prices, x='Date', y='Growth (%)', color='Ticker')
         fig.update_layout(showlegend=False)
         st.plotly_chart(fig)
-
     def plot_foreign(self):
         """Plot the foreign indexes."""
-        st.subheader(f'美股大盤＆海外大盤{self.time}走勢')
-
+        st.subheader(f'美股大盤＆海外大盤{self.time}走勢') 
+        
         # Create Plotly subplot figure for foreign indexes
         fig = make_subplots(rows=3, cols=2, subplot_titles=["S&P 500", "NASDAQ", "恆生指數", "深證指數", "加權指數", "日經指數"])
-
+        
         for i, symbol in enumerate(self.symbols['foreign']):
             row = (i // 2) + 1
             col = (i % 2) + 1
-            
-            # Apply conversion for foreign indexes
-            if symbol in ['^HSI', '399001.SZ', '^TWII', '^N225']:  
-                exchange_rates = {'^HSI': 0.13, '399001.SZ': 0.14, '^TWII': 0.031, '^N225': 0.0067}
-                fig.add_trace(go.Scatter(x=self.data[symbol].index, y=(self.data[symbol] * exchange_rates[symbol]).values, mode='lines', name=symbol), row=row, col=col)
-            else:
-                fig.add_trace(go.Scatter(x=self.data[symbol].index, y=self.data[symbol].values, mode='lines', name=symbol), row=row, col=col)
+        
+        fig.add_trace(go.Scatter(x=self.data[symbol].index, y=self.data[symbol].values, mode='lines', name=symbol), row=row, col=col)
+        fig.update_layout(showlegend=False)
+        st.plotly_chart(fig)
 
-        fig.update_layout(showlegend=False)
-        st.plotly_chart(fig)
-    
-    def plot_foreign_vs(self):
-        st.subheader(f'美股大盤＆海外大盤{self.time}走勢比較')
-        tickers = self.symbols['foreign']
-        exchange_rates = {'^HSI': 0.13, '399001.SZ': 0.14, '^TWII': 0.031, '^N225': 0.0067}
-        
-        prices = yf.download(tickers, period=self.period)['Adj Close'].dropna()
-        prices = prices / prices.iloc[0] * 100
-        prices = prices.reset_index().melt(id_vars='Date', var_name='Ticker', value_name='Growth (%)')
-        
-        for ticker, rate in exchange_rates.items():
-            prices.loc[prices['Ticker'] == ticker, 'Growth (%)'] *= rate
-        
-        fig = px.line(prices, x='Date', y='Growth (%)', color='Ticker')
-        fig.update_layout(showlegend=False)
-        st.plotly_chart(fig)
-  
+   def plot_foreign_vs(self):
+       st.subheader(f'美股大盤＆海外大盤{self.time}走勢比較')
+       tickers = self.symbols['foreign']
+       
+       prices = yf.download(tickers, period=self.period)['Adj Close'].dropna()
+       prices = prices / prices.iloc[0] * 100  
+       prices = prices.reset_index().melt(id_vars='Date', var_name='Ticker', value_name='Growth (%)')
+       
+       fig = px.line(prices, x='Date', y='Growth (%)', color='Ticker')
+       fig.update_layout(showlegend=True)
+       st.plotly_chart(fig)
+
     def plot(self):
         """Plot the financial data based on the selected type."""
         self.fetch_data()
