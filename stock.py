@@ -583,7 +583,7 @@ class Holding:
         else:
             st.error(f"{symbol} 無機構持有數據")
         df = pd.DataFrame(holders)
-        with st.expander(f"機構持股{symbol.ticker}比例與價值數據"):
+        with st.expander(f"機構持股{symbol.ticker}比例與價值數據前10名"):
             st.table(df)
 
     @staticmethod
@@ -613,7 +613,7 @@ class Holding:
             ))
             
             fig.update_layout(
-                title=f'共同基金持股{symbol.ticker}比例與價值',
+                title=f'ETF持股{symbol.ticker}比例與價值前10名',
                 xaxis_title='共同基金',
                 yaxis_title='持股比例 (%)'
             )
