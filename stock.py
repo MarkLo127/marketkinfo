@@ -74,7 +74,7 @@ class plotindex:
         tickers = self.symbols['index']
         
         prices = yf.download(tickers, period=self.period)['Adj Close'].dropna()
-        prices = prices / prices.iloc[0] * 100
+        prices = (prices / prices.iloc[0] - 1) * 100
         prices = prices.reset_index().melt(id_vars='Date', var_name='Ticker', value_name='Growth (%)')
         
         fig = px.line(prices, x='Date', y='Growth (%)', color='Ticker')
@@ -106,7 +106,7 @@ class plotindex:
         tickers = self.symbols['foreign']
         
         prices = yf.download(tickers, period=self.period)['Adj Close'].dropna()
-        prices = prices / prices.iloc[0] * 100  
+        prices = (prices / prices.iloc[0] - 1) * 100
         prices = prices.reset_index().melt(id_vars='Date', var_name='Ticker', value_name='Growth (%)')
         
         fig = px.line(prices, x='Date', y='Growth (%)', color='Ticker')
