@@ -43,11 +43,18 @@ class plotindex:
             'foreign': ['^GSPC', '^IXIC', '^HSI', '399001.SZ', '^TWII', '^N225']
         }
         self.data = {}
-
+    
     def fetch_data(self):
         """Fetch historical data for the selected indexes."""
-        for symbol in self.symbols[self.plot_type]:
-            self.data[symbol] = yf.download(symbol, period=self.period)['Adj Close']
+        tickers = self.symbols[self.plot_type]
+        
+        try:
+            data = yf.download(tickers, period=self.period)['Adj Close']
+            for symbol in tickers:
+                if symbol in data:
+                    self.data[symbol] = data[symbol].dropna()
+        except Exception as e:
+            st.error(f"Error fetching data: {e}")
 
     def plot_index(self):
         """Plot the US indexes."""
@@ -95,23 +102,23 @@ class plotindex:
 
         fig.update_layout(showlegend=False)
         st.plotly_chart(fig)
-        
+    
     def plot_foreign_vs(self):
         st.subheader(f'美股大盤＆海外大盤{self.time}走勢比較')
         tickers = self.symbols['foreign']
         exchange_rates = {'^HSI': 0.13, '399001.SZ': 0.14, '^TWII': 0.031, '^N225': 0.0067}
-
+        
         prices = yf.download(tickers)['Adj Close'].dropna()
         prices = prices / prices.iloc[0] * 100
         prices = prices.reset_index().melt(id_vars='Date', var_name='Ticker', value_name='Growth (%)')
         
-        for ticker,rate in exchange_rates.items():
-            prices.loc[prices['Ticker'] == ticker, 'Price'] *= rate
-
+        # 對外國代碼應用匯率轉換
+        for ticker, rate in exchange_rates.items():
+            prices.loc[prices['Ticker'] == ticker, 'Growth (%)'] *= rate
         fig = px.line(prices, x='Date', y='Growth (%)', color='Ticker')
-        fig.update_layout(showlegend=False)
+        fig.update_layout(showlegend=True)
         st.plotly_chart(fig)
-        
+  
     def plot(self):
         """Plot the financial data based on the selected type."""
         self.fetch_data()
