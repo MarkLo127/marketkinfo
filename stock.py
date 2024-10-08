@@ -575,7 +575,7 @@ class Holding:
             ))
             
             fig.update_layout(
-                title=f"機構持股{symbol.ticker}比例與價值數據前10名"
+                title=f"機構持股{symbol.ticker}比例與價值數據前10名",
                 xaxis_title='機構',
                 yaxis_title='持股比例 (%)'
             )
