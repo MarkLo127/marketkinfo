@@ -66,11 +66,12 @@ class plotindex:
     def plot_index_vs(self):
         st.subheader(f'美股大盤＆中小企業{self.time}走勢比較')
         tickers = self.symbols['index']
-        
+
         prices = yf.download(tickers)['Adj Close'].dropna()
-        prices = prices.reset_index().melt(id_vars='Date', var_name='Ticker', value_name='Price')
+        prices = prices / prices.iloc[0] * 100
+        prices = prices.reset_index().melt(id_vars='Date', var_name='Ticker', value_name='Growth (%)')
         
-        fig = px.line(prices, x='Date', y='Price', color='Ticker')
+        fig = px.line(prices, x='Date', y='Growth (%)', color='Ticker')
         fig.update_layout(showlegend=False)
         st.plotly_chart(fig)
 
@@ -101,12 +102,13 @@ class plotindex:
         exchange_rates = {'^HSI': 0.13, '399001.SZ': 0.14, '^TWII': 0.031, '^N225': 0.0067}
 
         prices = yf.download(tickers)['Adj Close'].dropna()
-        prices = prices.reset_index().melt(id_vars='Date', var_name='Ticker', value_name='Price')
+        prices = prices / prices.iloc[0] * 100
+        prices = prices.reset_index().melt(id_vars='Date', var_name='Ticker', value_name='Growth (%)')
         
         for ticker,rate in exchange_rates.items():
             prices.loc[prices['Ticker'] == ticker, 'Price'] *= rate
 
-        fig = px.line(prices, x='Date', y='Price', color='Ticker')
+        fig = px.line(prices, x='Date', y='Growth (%)', color='Ticker')
         fig.update_layout(showlegend=False)
         st.plotly_chart(fig)
         
