@@ -80,11 +80,10 @@ class plotindex:
         fig = px.line(prices, x='Date', y='Growth (%)', color='Ticker')
         fig.update_layout(showlegend=False)
         st.plotly_chart(fig)
+    
     def plot_foreign(self):
-        """Plot the foreign indexes."""
-        st.subheader(f'美股大盤＆海外大盤{self.time}走勢') 
+        st.subheader(f'美股大盤＆海外大盤{self.time}走勢')
         
-        # Create Plotly subplot figure for foreign indexes
         fig = make_subplots(rows=3, cols=2, subplot_titles=["S&P 500", "NASDAQ", "恆生指數", "深證指數", "加權指數", "日經指數"])
         
         for i, symbol in enumerate(self.symbols['foreign']):
