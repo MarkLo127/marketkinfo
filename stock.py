@@ -94,18 +94,18 @@ class plotindex:
         fig.add_trace(go.Scatter(x=self.data[symbol].index, y=self.data[symbol].values, mode='lines', name=symbol), row=row, col=col)
         fig.update_layout(showlegend=False)
         st.plotly_chart(fig)
-
-   def plot_foreign_vs(self):
-       st.subheader(f'美股大盤＆海外大盤{self.time}走勢比較')
-       tickers = self.symbols['foreign']
-       
-       prices = yf.download(tickers, period=self.period)['Adj Close'].dropna()
-       prices = prices / prices.iloc[0] * 100  
-       prices = prices.reset_index().melt(id_vars='Date', var_name='Ticker', value_name='Growth (%)')
-       
-       fig = px.line(prices, x='Date', y='Growth (%)', color='Ticker')
-       fig.update_layout(showlegend=True)
-       st.plotly_chart(fig)
+        
+    def plot_foreign_vs(self):
+        st.subheader(f'美股大盤＆海外大盤{self.time}走勢比較')
+        tickers = self.symbols['foreign']
+        
+        prices = yf.download(tickers, period=self.period)['Adj Close'].dropna()
+        prices = prices / prices.iloc[0] * 100  
+        prices = prices.reset_index().melt(id_vars='Date', var_name='Ticker', value_name='Growth (%)')
+        
+        fig = px.line(prices, x='Date', y='Growth (%)', color='Ticker')
+        fig.update_layout(showlegend=False)
+        st.plotly_chart(fig)
 
     def plot(self):
         """Plot the financial data based on the selected type."""
