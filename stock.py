@@ -115,7 +115,7 @@ class plotindex:
             prices.loc[prices['Ticker'] == ticker, 'Growth (%)'] *= rate
         
         fig = px.line(prices, x='Date', y='Growth (%)', color='Ticker')
-        fig.update_layout(showlegend=True)
+        fig.update_layout(showlegend=False)
         st.plotly_chart(fig)
   
     def plot(self):
