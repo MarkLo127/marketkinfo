@@ -809,6 +809,7 @@ def app():
             data = pltindex.data
             data = pd.DataFrame(data)
             st.dataframe(data)
+            prices = pd.DataFrame(prices)
             st.dataframe(prices)
         # 繪製海外大盤
         pltforeign = plotindex(period, time, plot_type='foreign')
@@ -817,6 +818,7 @@ def app():
             data = pltforeign.data
             data = pd.DataFrame(data)
             st.dataframe(data)
+            prices = pd.DataFrame(prices)
             st.dataframe(prices)
     
     elif options == '公司基本資訊':
