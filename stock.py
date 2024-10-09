@@ -40,7 +40,7 @@ class plotindex:
         self.plot_type = plot_type
         self.symbols = {
             'index': ['^IXIC', '^VIX', '^GSPC', '^DJI', '^SOX', '^RUT'],
-            'foreign': ['^GSPC', '^IXIC', '^HSI', '399001.SZ', '^TWII', '^N225']
+            'foreign': ['^GSPC', '^IXIC', '^HSI', '^STI', '^TWII', '^N225']
         }
         self.data = {}
     
@@ -86,7 +86,7 @@ class plotindex:
         st.subheader(f'美股大盤＆海外大盤{self.time}走勢')
 
         # Create Plotly subplot figure for foreign indexes
-        fig = make_subplots(rows=3, cols=2, subplot_titles=["S&P 500", "NASDAQ", "恆生指數", "深證指數", "加權指數", "日經指數"])
+        fig = make_subplots(rows=3, cols=2, subplot_titles=["S&P 500", "NASDAQ", "恆生指數", "新加坡海峽指數", "加權指數", "日經指數"])
 
         for i, symbol in enumerate(self.symbols['foreign']):
             row = (i // 2) + 1
