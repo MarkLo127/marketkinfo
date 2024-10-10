@@ -566,7 +566,7 @@ class Holding:
                                  hole=0.4,
                                  marker=dict(colors=[f'rgb({i*30 % 255}, {100 + i*40 % 155}, {i*50 % 255})' for i in range(len(holder_name))])
                                 ))
-            fig.update_layout(title=f"機構持股{symbol.ticker}比例前10名")
+            fig.update_layout(title=f"機構持股{symbol.ticker}比例前10名",annotations=[dict(text=f'{symbol.ticker}',x=0.5, y=0.5,font_size=dict(size=16),showarrow=False)])
             st.plotly_chart(fig, use_container_width=True)
         else:
             st.error(f"{symbol} 無機構持有數據")
@@ -593,7 +593,7 @@ class Holding:
                 hole=0.4,
                 marker=dict(colors=[f'rgb({i*35 % 255}, {i*45 % 255}, {150 + i*55 % 105})' for i in range(len(holder_name))])
             ))
-            fig.update_layout(title=f'ETF持股{symbol.ticker}比例前10名')
+            fig.update_layout(title=f"ETF持股{symbol.ticker}比例前10名",annotations=[dict(text=f'{symbol.ticker}',x=0.5, y=0.5,font_size=dict(size=16),showarrow=False)])
             st.plotly_chart(fig, use_container_width=True)
         else:
             st.error(f"{symbol} 無共同基金持有數據")
