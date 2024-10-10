@@ -564,7 +564,7 @@ class Holding:
             
             # 使用 plotly 繪製條形圖
             fig = go.Figure()
-            fig.add_trace(go.Bar(
+            fig.add_trace(go.Pie(
                 x=holder_name,
                 y=pct_held,
                 name='持股比例 (%)',
@@ -602,7 +602,7 @@ class Holding:
             
             # 使用 plotly 繪製條形圖
             fig = go.Figure()
-            fig.add_trace(go.Bar(
+            fig.add_trace(go.Pie(
                 x=holder_name,
                 y=pct_held,
                 name='持股比例 (%)',
