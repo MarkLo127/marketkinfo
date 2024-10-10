@@ -552,38 +552,26 @@ class Holding:
     def holder(symbol):
         symbol = yf.Ticker(symbol)
         holders = symbol.institutional_holders
-      
+        
         if holders is not None:
-            # 提取 pctHeld, value 和 Holder 欄位，並將持股比例轉換為百分比
-            pct_held = holders['pctHeld']  # 轉換為百分比
+            pct_held = holders['pctHeld']
             value = holders['Value']
             holder_name = holders['Holder']
-            
-            # 動態生成不同顏色列表，每個直條不同顏色
-            colors = [f'rgb({i*30 % 255}, {100 + i*40 % 155}, {i*50 % 255})' for i in range(len(holder_name))]
-            
-            # 使用 plotly 繪製條形圖
             fig = go.Figure()
-            fig.add_trace(go.Pie(
-                x=holder_name,
-                y=pct_held,
-                name='持股比例 (%)',
-                marker=dict(color=colors),  # 使用不同顏色
-                text=value,  # 顯示價值
-                texttemplate='%{text:.2s}',  # 格式化數值
-                textposition='auto'
-            ))
-            
-            fig.update_layout(
-                title=f"機構持股{symbol.ticker}比例與價值前10名",
-                xaxis_title='機構',
-                yaxis_title='持股比例 (%)'
-            )
+            fig.add_trace(go.Pie(labels=holder_name,
+                                 values=pct_held,
+                                 hoverinfo='label+percent+value',
+                                 textinfo='percent',
+                                 textfont_size=12,
+                                 hole=0.4,
+                                 marker=dict(colors=[f'rgb({i*30 % 255}, {100 + i*40 % 155}, {i*50 % 255})' for i in range(len(holder_name))])
+                                ))
+            fig.update_layout(title=f"機構持股{symbol.ticker}比例前10名")
             st.plotly_chart(fig, use_container_width=True)
         else:
             st.error(f"{symbol} 無機構持有數據")
         df = pd.DataFrame(holders)
-        with st.expander(f"機構持股{symbol.ticker}比例與價值數據前10名數據"):
+        with st.expander(f"機構持股{symbol.ticker}比例與價值前10名數據"):
             st.table(df)
 
     @staticmethod
@@ -592,39 +580,27 @@ class Holding:
         funds = symbol.mutualfund_holders
         
         if funds is not None:
-            # 提取 pctHeld, value 和 Holder 欄位，並將持股比例轉換為百分比
-            pct_held = funds['pctHeld']  # 轉換為百分比
+            pct_held = funds['pctHeld']
             value = funds['Value']
             holder_name = funds['Holder']
-            
-            # 動態生成不同顏色列表，每個直條不同顏色
-            colors = [f'rgb({i*35 % 255}, {i*45 % 255}, {150 + i*55 % 105})' for i in range(len(holder_name))]
-            
-            # 使用 plotly 繪製條形圖
             fig = go.Figure()
             fig.add_trace(go.Pie(
-                x=holder_name,
-                y=pct_held,
-                name='持股比例 (%)',
-                marker=dict(color=colors),  # 使用不同顏色
-                text=value,  # 顯示價值
-                texttemplate='%{text:.2s}',  # 格式化數值
-                textposition='auto'
+                labels=holder_name,
+                values=pct_held,
+                hoverinfo='label+percent+value',
+                textinfo='percent',
+                textfont_size=12,
+                hole=0.4,
+                marker=dict(colors=[f'rgb({i*35 % 255}, {i*45 % 255}, {150 + i*55 % 105})' for i in range(len(holder_name))])
             ))
-            
-            fig.update_layout(
-                title=f'ETF持股{symbol.ticker}比例與價值前10名',
-                xaxis_title='共同基金',
-                yaxis_title='持股比例 (%)'
-            )
+            fig.update_layout(title=f'ETF持股{symbol.ticker}比例前10名')
             st.plotly_chart(fig, use_container_width=True)
         else:
             st.error(f"{symbol} 無共同基金持有數據")
-
         df = pd.DataFrame(funds)
         with st.expander(f'ETF持股{symbol.ticker}比例與價值前10名數據'):
             st.table(df)
-
+            
     @staticmethod
     def scrape_finviz(symbol):
         # 爬蟲部分
