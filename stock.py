@@ -975,9 +975,9 @@ def app():
             date_str = date.strftime('%Y-%m-%d')  # 將日期轉換為字符串進行比較
 
             if date_str in option_dates:
-                st.subheader(f'{symbol}買權資訊（到期日：{date_str})')
+                st.subheader(f'{symbol}看漲期權（到期日：{date_str})')
                 st.dataframe( opion.options_calls_date(date_str))
-                st.subheader(f'{symbol}賣權資訊（到期日：{date_str})')
+                st.subheader(f'{symbol}看跌期權（到期日：{date_str})')
                 st.dataframe(opion.options_puts_date(date_str))
             else:
                 st.error('查無相關日期期權')
