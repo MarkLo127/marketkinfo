@@ -969,15 +969,15 @@ def app():
             opion = Option(symbol)
             option_dates = opion.get_option_dates()
             df = pd.DataFrame(option_dates, columns=['可用日期'])
-            st.subheader(f'{symbol} 期權到期日期')
+            st.subheader(f'{symbol} 期權到期日')
             st.table(df)
             date = st.date_input('選擇日期（請依照上面日期選擇）')
             date_str = date.strftime('%Y-%m-%d')  # 將日期轉換為字符串進行比較
 
             if date_str in option_dates:
-                st.subheader(f'{symbol}看漲期權（到期日：{date_str})')
+                st.subheader(f'{symbol}看漲期權(到期日：{date_str})')
                 st.dataframe( opion.options_calls_date(date_str))
-                st.subheader(f'{symbol}看跌期權（到期日：{date_str})')
+                st.subheader(f'{symbol}看跌期權(到期日：{date_str})')
                 st.dataframe(opion.options_puts_date(date_str))
             else:
                 st.error('查無相關日期期權')
