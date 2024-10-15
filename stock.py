@@ -176,7 +176,7 @@ class plotindex:
             }
             data = pd.DataFrame(self.data)
             data = data.rename(columns=tran)
-            st.table(data)
+            st.dataframe(data)
 
     def plot_foreign_vs(self):
         """Plot comparison of foreign indexes."""
