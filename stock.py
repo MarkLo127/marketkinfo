@@ -855,11 +855,11 @@ class secreport:
             if isinstance(filings, list):
                 filings = pd.DataFrame(filings)  # 將列表轉換為 DataFrame
 
-            st.subheader(f"公司 {self.symbol} 的 SEC 文件:")
+            st.subheader(f"{self.symbol}-SEC 文件:")
             st.dataframe(filings)  # 顯示為 DataFrame 表格
 
             # 展開連結部分
-            with st.expander(f"展開 {self.symbol} 的 SEC 連結"):
+            with st.expander(f"展開 {self.symbol}-SEC 連結"):
                 for index, row in filings.iterrows():
                     st.write(
                         f"{row['date']} - [{row['type']}] - [{row['title']}]({row['edgarUrl']})"
