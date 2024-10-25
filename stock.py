@@ -218,7 +218,6 @@ class cominfo:
         "website": "網站",
         "industry": "行業",
         "sector": "產業",
-        "longBusinessSummary": "公司簡介",
         "fullTimeEmployees": "全職員工數量",
         "marketCap": "市值",
         "totalRevenue": "總收入",
