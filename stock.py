@@ -32,28 +32,49 @@ import concurrent.futures
 # Streamlit 前端框架
 import streamlit as st  # Streamlit 模組
 
-
 # 1.大盤指數
 class plotindex:
-    def __init__(self, period, time, plot_type="index"):
-        self.period = period
-        self.time = time
-        self.plot_type = plot_type
-        self.symbols = {
-            "index": ["^IXIC", "^VIX", "^GSPC", "^DJI", "^SOX", "^RUT"],
-            "foreign": ["^GSPC", "^IXIC", "^HSI", "^STI", "^TWII", "^N225"],
-        }
-        self.symbol_names = {
+    def tran(self):  # 修改方法签名，添加self参数
+        return {  # 修改为返回字典而不是使用大括号
             "^IXIC": "NASDAQ",
+            "^NDX": "NASDAQ 100",
             "^VIX": "VIX",
             "^GSPC": "S&P 500",
             "^DJI": "Dow Jones",
             "^SOX": "PHLX Semiconductor Sector",
             "^RUT": "Russell 2000",
+            "BRK-A": "波克夏海瑟威",
             "^HSI": "恆生指數",
             "^STI": "新加坡海峽指數",
             "^TWII": "加權指數",
             "^N225": "日經指數",
+            "399001.SZ": "深證指數",
+            "^KS11": "韓國綜合股價指數"
+        }
+
+    def __init__(self, period, time, plot_type="index"):
+        self.period = period
+        self.time = time
+        self.plot_type = plot_type
+        self.symbols = {
+            "index": ["^IXIC", "^NDX", "^VIX", "^GSPC", "^DJI", "^SOX", "^RUT", "BRK-A"],
+            "foreign": ["^GSPC", "^IXIC", "^HSI", "^STI", "^TWII", "^N225", "399001.SZ", "^KS11"],
+        }
+        self.symbol_names = {
+            "^IXIC": "NASDAQ",
+            "^NDX": "NASDAQ 100",
+            "^VIX": "VIX",
+            "^GSPC": "S&P 500",
+            "^DJI": "Dow Jones",
+            "^SOX": "PHLX Semiconductor Sector",
+            "^RUT": "Russell 2000",
+            "BRK-A": "波克夏海瑟威",
+            "^HSI": "恆生指數",
+            "^STI": "新加坡海峽指數",
+            "^TWII": "加權指數",
+            "^N225": "日經指數",
+            "399001.SZ": "深證指數",
+            "^KS11": "韓國綜合股價指數"
         }
         self.data = {}
 
@@ -75,7 +96,7 @@ class plotindex:
 
         # Create Plotly subplot figure for indexes
         fig = make_subplots(
-            rows=3,
+            rows=4,
             cols=2,
             subplot_titles=[
                 self.symbol_names[symbol] for symbol in self.symbols["index"]
@@ -98,19 +119,7 @@ class plotindex:
         st.plotly_chart(fig)
         with st.expander(f"展開美股大盤＆中小企業{self.time}走勢"):
             data = pd.DataFrame(self.data)
-            tran = {
-                "^IXIC": "NASDAQ",
-                "^VIX": "VIX",
-                "^GSPC": "S&P 500",
-                "^DJI": "Dow Jones",
-                "^SOX": "PHLX Semiconductor Sector",
-                "^RUT": "Russell 2000",
-                "^HSI": "恆生指數",
-                "^STI": "新加坡海峽指數",
-                "^TWII": "加權指數",
-                "^N225": "日經指數",
-            }
-            data = data.rename(columns=tran)
+            data = data.rename(columns=self.tran())  # 修改为调用tran方法
             st.dataframe(data)
 
     def plot_index_vs(self):
@@ -138,7 +147,7 @@ class plotindex:
 
         # Create Plotly subplot figure for foreign indexes
         fig = make_subplots(
-            rows=3,
+            rows=4,  # 确保行数与数据数量匹配
             cols=2,
             subplot_titles=[
                 self.symbol_names[symbol] for symbol in self.symbols["foreign"]
@@ -146,36 +155,25 @@ class plotindex:
         )
 
         for i, symbol in enumerate(self.symbols["foreign"]):
-            row = (i // 2) + 1
-            col = (i % 2) + 1
-            fig.add_trace(
-                go.Scatter(
-                    x=self.data[symbol].index,
-                    y=self.data[symbol].values,
-                    mode="lines",
-                    name=self.symbol_names[symbol],
-                ),
-                row=row,
-                col=col,
-            )
+            if symbol in self.data:  # 确保数据存在
+                row = (i // 2) + 1
+                col = (i % 2) + 1
+                fig.add_trace(
+                    go.Scatter(
+                        x=self.data[symbol].index,
+                        y=self.data[symbol].values,
+                        mode="lines",
+                        name=self.symbol_names[symbol],
+                    ),
+                    row=row,
+                    col=col,
+                )
 
         fig.update_layout(showlegend=False)
         st.plotly_chart(fig)
         with st.expander(f"展開美股大盤＆海外大盤{self.time}走勢"):
-            tran = {
-                "^IXIC": "NASDAQ",
-                "^VIX": "VIX",
-                "^GSPC": "S&P 500",
-                "^DJI": "Dow Jones",
-                "^SOX": "PHLX Semiconductor Sector",
-                "^RUT": "Russell 2000",
-                "^HSI": "恆生指數",
-                "^STI": "新加坡海峽指數",
-                "^TWII": "加權指數",
-                "^N225": "日經指數",
-            }
             data = pd.DataFrame(self.data)
-            data = data.rename(columns=tran)
+            data = data.rename(columns=self.tran())  # 调用tran方法
             st.dataframe(data)
 
     def plot_foreign_vs(self):
@@ -206,7 +204,6 @@ class plotindex:
         elif self.plot_type == "foreign":
             self.plot_foreign()
             self.plot_foreign_vs()
-
 
 # 2.公司基本資訊
 class cominfo:
@@ -421,7 +418,7 @@ class com_mange:
                     ".", "", 1
                 ).isdigit():  # 檢查是否為數字字串
                     return float(value)  # 將數字字串轉為浮點數
-            return value  # 如果無需轉換，返回原始值
+            return value  # 如果無需換，返回原始值
 
         # 創建 DataFrame 以進行分類
         # 使用 tran_dict 進行翻譯
@@ -1365,7 +1362,7 @@ def app():
             st.subheader(f"{symbol} 期權到期日")
             st.table(df)
             date = st.date_input("選擇日期（請依照上面日期選擇）")
-            date_str = date.strftime("%Y-%m-%d")  # 將日期轉換為字符串進行比較
+            date_str = date.strftime("%Y-%m-%d")  # 將日轉換為字符串進行比較
 
             if date_str in option_dates:
                 st.subheader(f"{symbol}看漲期權(到期日：{date_str})")
