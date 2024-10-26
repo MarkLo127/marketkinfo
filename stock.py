@@ -819,6 +819,7 @@ class Holding:
         )
 
         fig.update_layout(title=title)  # 直接使用標題
+        fig.update_layout(showlegend=False)
         st.plotly_chart(fig)
 
     @staticmethod
