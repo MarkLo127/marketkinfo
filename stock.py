@@ -924,7 +924,7 @@ class Holding:
                 fig1.add_trace(
                     go.Scatter(
                         x=[row["目標價格起始"], row["目標價格結束"]],
-                        y=[row["分析師"], row["分析師"]],
+                        y=[row["分析機構"], row["分析機構"]],
                         mode="lines+markers+text",
                         line=dict(
                             color=(
