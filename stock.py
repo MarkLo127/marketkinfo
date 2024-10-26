@@ -32,6 +32,7 @@ import concurrent.futures
 # Streamlit 前端框架
 import streamlit as st  # Streamlit 模組
 
+
 # 1.大盤指數
 class plotindex:
     def tran(self):  # 修改方法签名，添加self参数
@@ -49,7 +50,7 @@ class plotindex:
             "^TWII": "加權指數",
             "^N225": "日經指數",
             "399001.SZ": "深證指數",
-            "^KS11": "韓國綜合股價指數"
+            "^KS11": "韓國綜合股價指數",
         }
 
     def __init__(self, period, time, plot_type="index"):
@@ -57,8 +58,26 @@ class plotindex:
         self.time = time
         self.plot_type = plot_type
         self.symbols = {
-            "index": ["^IXIC", "^NDX", "^VIX", "^GSPC", "^DJI", "^SOX", "^RUT", "BRK-A"],
-            "foreign": ["^GSPC", "^IXIC", "^HSI", "^STI", "^TWII", "^N225", "399001.SZ", "^KS11"],
+            "index": [
+                "^IXIC",
+                "^NDX",
+                "^VIX",
+                "^GSPC",
+                "^DJI",
+                "^SOX",
+                "^RUT",
+                "BRK-A",
+            ],
+            "foreign": [
+                "^GSPC",
+                "^IXIC",
+                "^HSI",
+                "^STI",
+                "^TWII",
+                "^N225",
+                "399001.SZ",
+                "^KS11",
+            ],
         }
         self.symbol_names = {
             "^IXIC": "NASDAQ",
@@ -74,7 +93,7 @@ class plotindex:
             "^TWII": "加權指數",
             "^N225": "日經指數",
             "399001.SZ": "深證指數",
-            "^KS11": "韓國綜合股價指數"
+            "^KS11": "韓國綜合股價指數",
         }
         self.data = {}
 
@@ -205,6 +224,7 @@ class plotindex:
             self.plot_foreign()
             self.plot_foreign_vs()
 
+
 # 2.公司基本資訊
 class cominfo:
     tran_dict = {
@@ -263,7 +283,7 @@ class cominfo:
                     value = f"{value:,}"  # 千分位格式
                 tran_info[self.tran_dict[key]] = value
 
-        return pd.DataFrame.from_dict(tran_info, orient="index",columns=[" "])
+        return pd.DataFrame.from_dict(tran_info, orient="index", columns=[" "])
 
     def get_location(self, address, city, country):
         """獲取公司位置的經緯度，若 address 無法定位則使用 city 定位"""
@@ -287,146 +307,6 @@ class cominfo:
         ).add_to(m)
         folium_static(m)
 
-
-# 3.公司經營狀況
-class com_mange:
-    tran_dict = {
-        "Index": "指數",
-        "P/E": "市盈率",
-        "EPS (ttm)": "每股盈餘 (ttm)",
-        "Insider Own": "內部持股比例",
-        "Shs Outstand": "流通股數",
-        "Perf Week": "周表現",
-        "Market Cap": "市值",
-        "Forward P/E": "預期市盈率",
-        "EPS next Y": "明年每股盈餘",
-        "Insider Trans": "內部交易變動",
-        "Shs Float": "流通股",
-        "Perf Month": "月表現",
-        "Income": "收益",
-        "PEG": "市盈增長比率",
-        "EPS next Q": "下一季度每股盈餘",
-        "Inst Own": "機構持股比例",
-        "Short Float": "流通空頭比例",
-        "Perf Quarter": "季度表現",
-        "Sales": "銷售額",
-        "P/S": "市銷率",
-        "EPS this Y": "今年每股盈餘",
-        "Inst Trans": "機構交易變動",
-        "Short Ratio": "空頭比例",
-        "Perf Half Y": "半年表現",
-        "Book/sh": "每股淨資產",
-        "P/B": "市淨率",
-        "ROA": "資產回報率",
-        "Short Interest": "空頭股數",
-        "Perf Year": "年表現",
-        "Cash/sh": "每股現金",
-        "P/C": "市現率",
-        "EPS next 5Y": "未來5年每股盈餘",
-        "ROE": "股東權益回報率",
-        "52W Range": "52週範圍",
-        "Perf YTD": "今年迄今表現",
-        "Dividend Est.": "預估股息",
-        "P/FCF": "市現金流比",
-        "EPS past 5Y": "過去5年每股盈餘",
-        "ROI": "投資回報率",
-        "52W High": "52週最高",
-        "Beta": "貝塔係數",
-        "Dividend TTM": "股息 (TTM)",
-        "Quick Ratio": "速動比率",
-        "Sales past 5Y": "過去5年銷售額",
-        "Gross Margin": "毛利率",
-        "52W Low": "52週最低",
-        "ATR (14)": "平均真實波幅 (14)",
-        "Dividend Ex-Date": "除息日",
-        "Current Ratio": "流動比率",
-        "EPS Y/Y TTM": "每股盈餘同比 (TTM)",
-        "Oper. Margin": "營業利潤率",
-        "RSI (14)": "相對強弱指數 (14)",
-        "Volatility": "波動率",
-        "Employees": "員工數",
-        "Debt/Eq": "負債股本比",
-        "Sales Y/Y TTM": "銷售同比 (TTM)",
-        "Profit Margin": "利潤率",
-        "Recom": "推薦等級",
-        "Target Price": "目標價",
-        "Option/Short": "期權/空頭",
-        "LT Debt/Eq": "長期負債股本比",
-        "EPS Q/Q": "季度每股盈餘",
-        "Payout": "股息支付率",
-        "Rel Volume": "相對成交量",
-        "Prev Close": "前收盤價",
-        "Sales Surprise": "銷售驚喜",
-        "EPS Surprise": "每股盈餘驚喜",
-        "Sales Q/Q": "季度銷售額",
-        "Earnings": "收益公佈",
-        "Avg Volume": "平均成交量",
-        "Price": "價格",
-        "SMA20": "20日均線",
-        "SMA50": "50日均線",
-        "SMA200": "200日均線",
-        "Trades": "交易次數",
-        "Volume": "成交量",
-        "Change": "變動幅度",
-    }
-
-    @staticmethod
-    def get_mange_info(symbol):
-        # 步驟1：獲取股票統計數據
-        url = f"https://finviz.com/quote.ashx?t={symbol}&p=d#statements"
-        headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
-        }
-        try:
-            response = res.get(url, headers=headers)
-            response.raise_for_status()
-        except res.exceptions.RequestException as e:
-            st.error(f"獲取 {symbol} 數據時出錯: {e}")
-            return None
-
-        # 步驟2：解析HTML以獲取數據
-        soup = BeautifulSoup(response.text, "html.parser")
-        table = soup.find("table", class_="snapshot-table2")
-        if not table:
-            st.error("頁面上未找到表格")
-            return None
-
-        # 步驟3：將數據提取到字典中
-        rows = table.find_all("tr")
-        data = {}
-        for row in rows:
-            cells = row.find_all("td")
-            for i in range(0, len(cells), 2):
-                key = cells[i].get_text(strip=True)
-                value = cells[i + 1].get_text(strip=True)
-                data[key] = value
-
-        # 步驟4：處理數值以便分類和繪圖
-        @staticmethod
-        def process_value(value):
-            if isinstance(value, str):
-                value = value.replace(",", "")  # 去除千分位逗號
-                if value.endswith("%"):
-                    return float(value[:-1])  # 將百分比轉為浮點數
-                elif value.endswith("B"):
-                    return float(value[:-1]) * 1e9  # 將十億轉為浮點數
-                elif value.endswith("M"):
-                    return float(value[:-1]) * 1e6  # 將百萬轉為浮點數
-                elif value.endswith("K"):
-                    return float(value[:-1]) * 1e3  # 將千轉為浮點數
-                elif value.replace(
-                    ".", "", 1
-                ).isdigit():  # 檢查是否為數字字串
-                    return float(value)  # 將數字字串轉為浮點數
-            return value  # 如果無需換，返回原始值
-
-        # 創建 DataFrame 以進行分類
-        # 使用 tran_dict 進行翻譯
-        tran_data = {com_mange.tran_dict.get(key, key): value for key, value in data.items()}
-        df = pd.DataFrame(list(tran_data.items()), columns=["指標", "數據"])
-        
-        # 步驟5：分類並繪製數據
-        st.table(df)
 
 # 4.公司財報
 # 年報
@@ -518,8 +398,9 @@ class financialreport_y:
             st.subheader(f"{self.symbol}-現金流量表/年")
             st.dataframe(self.cash_flow)
 
+
 # 季報
-class ffinancialreport_q:
+class financialreport_q:
     def __init__(self, symbol, target_language="zh-TW"):
         self.symbol = symbol
         self.target_language = target_language
@@ -619,31 +500,39 @@ class tradedata:
 
     @staticmethod
     def getdata(symbol, time_range):
+        """根據時間範圍下載股票數據。"""
         stock_data = yf.download(symbol, period=time_range)
+        if isinstance(stock_data.columns, pd.MultiIndex):
+            stock_data.columns = stock_data.columns.droplevel(1)  # 移除 'NVDA' 層級
         return stock_data
 
     @staticmethod
-    def getdata_timerange(symbol, start, end):
+    def get_data_time_range(symbol, start, end):
+        """根據開始和結束日期下載股票數據。"""
         stock_data = yf.download(symbol, start=start, end=end)
+        if isinstance(stock_data.columns, pd.MultiIndex):
+            stock_data.columns = stock_data.columns.droplevel(1)  # 移除 'NVDA' 層級
         return stock_data
 
-    # 計算價格差異的函數
     @staticmethod
     def calculate_difference(stock_data, period_days):
-        latest_price = stock_data.iloc[-1]["Adj Close"]  # 最新收盤價
+        """計算最新價格與指定天數前的價格差異。"""
+        latest_price = stock_data.iloc[-1]["Adj Close"]
         previous_price = (
             stock_data.iloc[-period_days]["Adj Close"]
             if len(stock_data) > period_days
             else stock_data.iloc[0]["Adj Close"]
-        )  # 特定天數前的收盤價
-        price_difference = latest_price - previous_price  # 計算價格差異
-        percent_difference = (price_difference / previous_price) * 100  # 計算百分比變化
-        return price_difference, percent_difference  # 返回價格差異和百分比變化
+        )
+        price_difference = latest_price - previous_price
+        percent_difference = (
+            (price_difference / previous_price) * 100 if previous_price != 0 else 0
+        )
+        return price_difference, percent_difference
 
-    # 繪製K線圖
     @staticmethod
     def plot_kline(stock_data):
-        fig = plotly.subplots.make_subplots(
+        """繪製K線圖和技術指標。"""
+        fig = make_subplots(
             rows=4,
             cols=1,
             shared_xaxes=True,
@@ -651,10 +540,12 @@ class tradedata:
             row_heights=[0.8, 0.5, 0.5, 0.5],
         )
 
-        mav5 = stock_data["Adj Close"].rolling(window=5).mean()  # 5日MAV
-        mav20 = stock_data["Adj Close"].rolling(window=20).mean()  # 20日MAV
-        mav60 = stock_data["Adj Close"].rolling(window=60).mean()  # 60日MAV
+        # 計算移動平均線
+        mav5 = stock_data["Adj Close"].rolling(window=5).mean()
+        mav20 = stock_data["Adj Close"].rolling(window=20).mean()
+        mav60 = stock_data["Adj Close"].rolling(window=60).mean()
 
+        # 計算RSI和MACD
         rsi = RSIIndicator(close=stock_data["Adj Close"], window=14)
         macd = MACD(
             close=stock_data["Adj Close"], window_slow=26, window_fast=12, window_sign=9
@@ -668,20 +559,21 @@ class tradedata:
                 high=stock_data["High"],
                 low=stock_data["Low"],
                 close=stock_data["Adj Close"],
+                hovertext="K線",
+                hoverinfo="text",
             ),
             row=1,
             col=1,
         )
         fig.update_layout(xaxis_rangeslider_visible=False)
 
-        # 移動平均線
+        # 繪製移動平均線
         fig.add_trace(
             go.Scatter(
                 x=stock_data.index,
                 y=mav5,
                 line=dict(color="blue", width=2),
-                name="MAV-5",
-                showlegend=False,
+                name="5-mav",
             ),
             row=1,
             col=1,
@@ -691,8 +583,7 @@ class tradedata:
                 x=stock_data.index,
                 y=mav20,
                 line=dict(color="orange", width=2),
-                name="MAV-20",
-                showlegend=False,
+                name="20-mav",
             ),
             row=1,
             col=1,
@@ -702,14 +593,13 @@ class tradedata:
                 x=stock_data.index,
                 y=mav60,
                 line=dict(color="purple", width=2),
-                name="MAV-60",
-                showlegend=False,
+                name="60-mav",
             ),
             row=1,
             col=1,
         )
 
-        # 成交量
+        # 交易量條形圖
         colors = [
             "green" if row["Open"] - row["Adj Close"] >= 0 else "red"
             for _, row in stock_data.iterrows()
@@ -719,20 +609,19 @@ class tradedata:
                 x=stock_data.index,
                 y=stock_data["Volume"],
                 marker_color=colors,
-                name="Volume",
-                showlegend=False,
+                name="交易量",
             ),
             row=2,
             col=1,
         )
 
-        # RSI
+        # RSI指標
         fig.add_trace(
             go.Scatter(
                 x=stock_data.index,
                 y=rsi.rsi(),
                 line=dict(color="purple", width=2),
-                showlegend=False,
+                name="RSI",
             ),
             row=3,
             col=1,
@@ -742,8 +631,7 @@ class tradedata:
                 x=stock_data.index,
                 y=[70] * len(stock_data.index),
                 line=dict(color="red", width=1),
-                name="Overbought",
-                showlegend=False,
+                name="超買",
             ),
             row=3,
             col=1,
@@ -753,21 +641,20 @@ class tradedata:
                 x=stock_data.index,
                 y=[30] * len(stock_data.index),
                 line=dict(color="green", width=1),
-                name="Oversold",
-                showlegend=False,
+                name="超賣",
             ),
             row=3,
             col=1,
         )
 
-        # MACD
+        # MACD指標
         colorsM = ["green" if val >= 0 else "red" for val in macd.macd_diff()]
         fig.add_trace(
             go.Bar(
                 x=stock_data.index,
                 y=macd.macd_diff(),
                 marker_color=colorsM,
-                showlegend=False,
+                name="MACD 差異",
             ),
             row=4,
             col=1,
@@ -777,7 +664,7 @@ class tradedata:
                 x=stock_data.index,
                 y=macd.macd(),
                 line=dict(color="orange", width=2),
-                showlegend=False,
+                name="MACD",
             ),
             row=4,
             col=1,
@@ -787,21 +674,19 @@ class tradedata:
                 x=stock_data.index,
                 y=macd.macd_signal(),
                 line=dict(color="blue", width=1),
-                showlegend=False,
+                name="MACD 信號",
             ),
             row=4,
             col=1,
         )
 
-        # 設置Y軸標題
-        fig.update_yaxes(title_text="Price", row=1, col=1)
+        # 更新Y軸標題
+        fig.update_yaxes(title_text="Peice", row=1, col=1)
         fig.update_yaxes(title_text="Volume", row=2, col=1)
         fig.update_yaxes(title_text="RSI", row=3, col=1)
         fig.update_yaxes(title_text="MACD", row=4, col=1)
 
-        # 隱藏圖例
         fig.update_layout(showlegend=False)
-
         st.plotly_chart(fig, use_container_width=True)
 
 
@@ -809,6 +694,22 @@ class tradedata:
 class Option:
     def __init__(self, symbol):
         self.symbol = symbol
+        self.tran_dict = {
+            "contractSymbol": " ",
+            "lastTradeDate": "最後交易日期",
+            "strike": "行使價",
+            "lastPrice": "最後價格",
+            "bid": "賣出價格",
+            "ask": "買入價格",
+            "change": "變動",
+            "percentChange": "百分比變動",
+            "volume": "交易量",
+            "openInterest": "未平倉量",
+            "impliedVolatility": "隱含波動率",
+            "inTheMoney": "實值",
+            "contractSize": "合約大小",
+            "currency": "貨幣",
+        }
 
     def get_option_dates(self):
         stock = yf.Ticker(self.symbol)
@@ -823,6 +724,11 @@ class Option:
         stock = yf.Ticker(self.symbol)
         option_chain = stock.option_chain(date)
         return option_chain.puts
+
+    def tran_col(self, df):
+        """Translate DataFrame column names to Chinese."""
+        df.rename(columns=self.tran_dict, inplace=True)
+        return df
 
 
 # 7.SEC文件
@@ -866,126 +772,116 @@ class secreport:
 
 # 8.機構評級
 class Holding:
-    def __init__(self, symbol):
-        self.symbol = symbol
+    tran_dict = {
+        "Date Reported": "報告日期",
+        "Holder": "持有人",
+        "pctHeld": "持股比例",
+        "Shares": "股份數",
+        "Value": "價值",
+        "Date": "日期",
+        "Action": "動作",
+        "Analyst": "分析機構",
+        "Rating Change": "評級變化",
+        "Price Target Change": "目標價格變化",
+        "Price Target Start": "目標價格起始",
+        "Price Target End": "目標價格結束",
+    }
+
+    @staticmethod
+    def display_pie_chart(holder_name, pct_held, title, ticker):
+        """Display pie chart for holders."""
+        fig = go.Figure()
+        fig.add_trace(
+            go.Pie(
+                labels=holder_name,
+                values=pct_held,
+                hoverinfo="label+percent+value",
+                textinfo="percent",
+                textfont_size=12,
+                hole=0.4,
+                marker=dict(
+                    colors=[
+                        f"rgb({i*30 % 255}, {100 + i*40 % 155}, {i*50 % 255})"
+                        for i in range(len(holder_name))
+                    ]
+                ),
+            )
+        )
+
+        # 添加股票代號到甜甜圈圖的中心
+        fig.add_annotation(
+            text=ticker,  # 股票代號
+            font=dict(size=20, color="black"),  # 設定字體大小和顏色
+            showarrow=False,  # 不顯示箭頭
+            x=0.5,  # x座標
+            y=0.5,  # y座標
+            align="center",  # 文字對齊方式
+        )
+
+        fig.update_layout(title=title)  # 直接使用標題
+        st.plotly_chart(fig)
 
     @staticmethod
     def holder(symbol):
         symbol = yf.Ticker(symbol)
         holders = symbol.institutional_holders
 
-        if holders is not None:
+        if holders is not None and not holders.empty:
             pct_held = holders["pctHeld"]
-            value = holders["Value"]
             holder_name = holders["Holder"]
-            fig = go.Figure()
-            fig.add_trace(
-                go.Pie(
-                    labels=holder_name,
-                    values=pct_held,
-                    hoverinfo="label+percent+value",
-                    textinfo="percent",
-                    textfont_size=12,
-                    hole=0.4,
-                    marker=dict(
-                        colors=[
-                            f"rgb({i*30 % 255}, {100 + i*40 % 155}, {i*50 % 255})"
-                            for i in range(len(holder_name))
-                        ]
-                    ),
-                )
+            Holding.display_pie_chart(
+                holder_name,
+                pct_held,
+                f"機構持股 {symbol.ticker} 比例前10名",
+                symbol.ticker,
             )
-            fig.update_layout(
-                title=f"機構持股{symbol.ticker}比例前10名",
-                annotations=[
-                    dict(
-                        text=f"{symbol.ticker}",
-                        x=0.5,
-                        y=0.5,
-                        font=dict(size=16),
-                        showarrow=False,
-                    )
-                ],
-            )
-            st.plotly_chart(fig, use_container_width=True)
+            df = pd.DataFrame(holders)
+            df.rename(columns=Holding.tran_dict, inplace=True)
+            with st.expander(f"機構持股 {symbol.ticker} 比例與價值前10名數據"):
+                st.table(df)
         else:
             st.error(f"{symbol} 無機構持有數據")
-        df = pd.DataFrame(holders)
-        with st.expander(f"機構持股{symbol.ticker}比例與價值前10名數據"):
-            st.table(df)
 
     @staticmethod
     def fund_holder(symbol):
         symbol = yf.Ticker(symbol)
         funds = symbol.mutualfund_holders
 
-        if funds is not None:
+        if funds is not None and not funds.empty:
             pct_held = funds["pctHeld"]
-            value = funds["Value"]
             holder_name = funds["Holder"]
-            fig = go.Figure()
-            fig.add_trace(
-                go.Pie(
-                    labels=holder_name,
-                    values=pct_held,
-                    hoverinfo="label+percent+value",
-                    textinfo="percent",
-                    textfont_size=12,
-                    hole=0.4,
-                    marker=dict(
-                        colors=[
-                            f"rgb({i*35 % 255}, {i*45 % 255}, {150 + i*55 % 105})"
-                            for i in range(len(holder_name))
-                        ]
-                    ),
-                )
+            Holding.display_pie_chart(
+                holder_name,
+                pct_held,
+                f"共同基金持股 {symbol.ticker} 比例前10名",
+                symbol.ticker,
             )
-            fig.update_layout(
-                title=f"ETF持股{symbol.ticker}比例前10名",
-                annotations=[
-                    dict(
-                        text=f"{symbol.ticker}",
-                        x=0.5,
-                        y=0.5,
-                        font=dict(size=16),
-                        showarrow=False,
-                    )
-                ],
-            )
-            st.plotly_chart(fig, use_container_width=True)
+            df = pd.DataFrame(funds)
+            df.rename(columns=Holding.tran_dict, inplace=True)
+            with st.expander(f"共同基金持股 {symbol.ticker} 比例與價值前10名數據"):
+                st.table(df)
         else:
             st.error(f"{symbol} 無共同基金持有數據")
-        df = pd.DataFrame(funds)
-        with st.expander(f"ETF持股{symbol.ticker}比例與價值前10名數據"):
-            st.table(df)
 
     @staticmethod
     def scrape_finviz(symbol):
-        # 爬蟲部分
         url = f"https://finviz.com/quote.ashx?t={symbol}"
-        headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3"
-        }
+        headers = {"User-Agent": "Mozilla/5.0"}
         response = res.get(url, headers=headers)
 
-        # 檢查請求是否成功
         if response.status_code != 200:
             raise Exception(f"無法從 {url} 獲取數據，狀態碼: {response.status_code}")
 
         soup = BeautifulSoup(response.content, "html.parser")
-
-        # 定位包含分析師評級的表格
         table = soup.find(
             "table", class_="js-table-ratings styled-table-new is-rounded is-small"
         )
 
-        # 檢查是否成功找到表格
         if table is None:
             raise Exception("未能在頁面上找到評級表格。")
 
-        # 從表格中提取數據
         data = []
-        for row in table.find_all("tr")[1:]:  # 跳過表頭
+        for row in table.find_all("tr")[1:]:
             cols = row.find_all("td")
             data.append(
                 {
@@ -999,87 +895,72 @@ class Holding:
                 }
             )
 
-        # 將數據轉換為 DataFrame
-        df = pd.DataFrame(data)
-
-        # 移除空的目標價格變化
-        df = df.dropna(subset=["Price Target Change"])
-
-        # 清理數據，替換特殊字符
+        df = pd.DataFrame(data).dropna(subset=["Price Target Change"])
         df["Price Target Change"] = (
             df["Price Target Change"].str.replace("→", "->").str.replace(" ", "")
         )
 
-        # 將目標價格變化轉換為數值範圍
-        price_change_ranges = df["Price Target Change"].str.extract(r"\$(\d+)->\$(\d+)")
-        price_change_ranges = price_change_ranges.apply(pd.to_numeric)
-        df["Price Target Start"] = price_change_ranges[0]
-        df["Price Target End"] = price_change_ranges[1]
-
-        # 動態生成評級變化的順序
-        rating_order = df["Rating Change"].unique().tolist()
-        df["Rating Change"] = pd.Categorical(
-            df["Rating Change"], categories=rating_order, ordered=True
-        )
-
-        # 可視化 1：分析師的目標價格變化
-        fig1 = go.Figure()
-        for i, row in df.iterrows():
-            fig1.add_trace(
-                go.Scatter(
-                    x=[row["Price Target Start"], row["Price Target End"]],
-                    y=[row["Analyst"], row["Analyst"]],
-                    mode="lines+markers+text",
-                    line=dict(
-                        color=(
-                            "blue"
-                            if row["Price Target End"] >= row["Price Target Start"]
-                            else "red"
-                        ),
-                        width=2,
-                    ),
-                    marker=dict(
-                        size=10,
-                        color=(
-                            "blue"
-                            if row["Price Target End"] >= row["Price Target Start"]
-                            else "red"
-                        ),
-                    ),
-                    text=[
-                        f"${row['Price Target Start']}",
-                        f"${row['Price Target End']}",
-                    ],
-                    textposition="top center",
-                )
+        if df["Price Target Change"].str.contains(r"\$").any():
+            price_change_ranges = df["Price Target Change"].str.extract(
+                r"\$(\d+)->\$(\d+)"
+            )
+            price_change_ranges = price_change_ranges.apply(
+                pd.to_numeric, errors="coerce"
             )
 
-        fig1.update_layout(
-            title=f"機構對{symbol}目標價格變化",
-            xaxis_title="目標價格",
-            yaxis_title="機構",
-            yaxis=dict(type="category"),
-            showlegend=False,
-        )
+            df["Price Target Start"] = price_change_ranges[0]
+            df["Price Target End"] = price_change_ranges[1]
 
-        # 可視化 2：評級變化的分佈，使用不同顏色
-        fig2 = px.histogram(
-            df,
-            x="Rating Change",
-            title=f"機構評級{symbol}變化分佈",
-            color="Rating Change",
-            category_orders={"Rating Change": rating_order},
-        )  # 明確排序順序
+            # 設置評級的順序
+            rating_order = df["Rating Change"].unique().tolist()
+            df["Rating Change"] = pd.Categorical(
+                df["Rating Change"], categories=rating_order, ordered=True
+            )
+            df.rename(columns=Holding.tran_dict, inplace=True)
 
-        fig2.update_layout(showlegend=False)
+            # 繪製圖表
+            fig1 = go.Figure()
+            for i, row in df.iterrows():
+                fig1.add_trace(
+                    go.Scatter(
+                        x=[row["目標價格起始"], row["目標價格結束"]],
+                        y=[row["分析師"], row["分析師"]],
+                        mode="lines+markers+text",
+                        line=dict(
+                            color=(
+                                "blue"
+                                if row["目標價格結束"] >= row["目標價格起始"]
+                                else "red"
+                            ),
+                            width=2,
+                        ),
+                        marker=dict(size=10),
+                        text=[f"${row['目標價格起始']}", f"${row['目標價格結束']}"],
+                        textposition="top center",
+                    )
+                )
 
-        # 顯示圖表
-        st.plotly_chart(fig1)
-        st.plotly_chart(fig2)
+            fig1.update_layout(
+                title=f"機構對 {symbol} 目標價格變化",
+                xaxis_title="目標價格",
+                yaxis_title="機構",
+                yaxis=dict(type="category"),
+                showlegend=False,
+            )
 
-        # 顯示評級數據
-        with st.expander(f"機構評級{symbol}變化分佈數據"):
-            st.table(df)
+            fig2 = px.histogram(
+                df,
+                x="評級變化",
+                title=f"機構評級 {symbol} 變化分佈",
+                color="評級變化",
+                category_orders={"評級變化": rating_order},
+            )
+            fig2.update_layout(showlegend=False)
+
+            st.plotly_chart(fig1)
+            st.plotly_chart(fig2)
+            with st.expander(f"機構評級 {symbol} 變化分佈數據"):
+                st.table(df)
 
 
 # 9.相關新聞
@@ -1215,9 +1096,6 @@ def app():
                 st.subheader(f"{symbol}-基本資訊")
                 st.table(translated_df)
 
-                st.subheader(f"{symbol}-經營狀況")
-                com＿mange.get_mange_info(symbol)
-                st.markdown(f"[資料來源](https://finviz.com/quote.ashx?t={symbol})")
                 # 顯示地圖
                 if location:
                     st.subheader(f"{symbol}-位置")
@@ -1239,7 +1117,7 @@ def app():
                 translator.tran_financial()
                 translator.display_financial()
             elif time_range == "季報":
-                translator_quarterly = ffinancialreport_q(symbol)
+                translator_quarterly = financialreport_q(symbol)
                 translator_quarterly.get_financial_q()
                 translator_quarterly.tran_financial_q()
                 translator_quarterly.display_financial_q()
@@ -1356,19 +1234,23 @@ def app():
             symbol = st.session_state.symbol
 
         if symbol:
-            opion = Option(symbol)
-            option_dates = opion.get_option_dates()
+            option = Option(symbol)
+            option_dates = option.get_option_dates()
             df = pd.DataFrame(option_dates, columns=["可用日期"])
             st.subheader(f"{symbol} 期權到期日")
             st.table(df)
+
             date = st.date_input("選擇日期（請依照上面日期選擇）")
             date_str = date.strftime("%Y-%m-%d")  # 將日轉換為字符串進行比較
 
             if date_str in option_dates:
                 st.subheader(f"{symbol}看漲期權(到期日：{date_str})")
-                st.dataframe(opion.options_calls_date(date_str))
+                calls_df = option.options_calls_date(date_str)
+                st.dataframe(option.tran_col(calls_df))
+
                 st.subheader(f"{symbol}看跌期權(到期日：{date_str})")
-                st.dataframe(opion.options_puts_date(date_str))
+                puts_df = option.options_puts_date(date_str)
+                st.dataframe(option.tran_col(puts_df))
             else:
                 st.error("查無相關日期期權")
 
@@ -1384,10 +1266,9 @@ def app():
     elif options == "機構買賣":
         symbol = st.text_input("輸入美股代號").upper()
         if st.button("查詢"):
-            holding = Holding(symbol)
-            holding.holder(symbol)
-            holding.fund_holder(symbol)
-            holding.scrape_finviz(symbol)
+            Holding.holder(symbol)
+            Holding.fund_holder(symbol)
+            Holding.scrape_finviz(symbol)
             st.markdown(f"[資料來源](https://finviz.com/quote.ashx?t={symbol})")
 
     elif options == "近期相關消息":
