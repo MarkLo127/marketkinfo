@@ -1255,9 +1255,6 @@ def app():
             else:
                 st.error("查無相關日期期權")
 
-            if st.button("重新查詢"):
-                st.session_state.symbol = ""  # 清除 symbol 以便重新輸入
-
     elif options == "SEC文件":
         symbol = st.text_input("輸入美股代號").upper()
         if st.button("查詢"):
