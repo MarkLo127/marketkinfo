@@ -1,5 +1,6 @@
 # 資料分析
 import pandas as pd  # 資料處理
+import numpy as np  # 資料處理
 import json  # JSON 處理
 import csv
 
@@ -146,8 +147,10 @@ class plotindex:
         st.subheader(f"美股大盤＆中小企業{self.time}走勢比較")
         tickers = self.symbols["index"]
 
-        prices = yf.download(tickers, period=self.period)["Adj Close"].dropna()
-        prices = (prices / prices.iloc[0] - 1) * 100
+        prices = yf.download(tickers, period=self.period).dropna()
+        prices = np.log(prices["Adj Close"] / prices["Adj Close"].shift(1))
+        prices = prices.cumsum()
+        prices = (np.exp(prices) - 1) * 100
         prices = prices.reset_index().melt(
             id_vars="Date", var_name="Ticker", value_name="Growth (%)"
         )
@@ -200,8 +203,10 @@ class plotindex:
         st.subheader(f"美股大盤＆海外大盤{self.time}走勢比較")
         tickers = self.symbols["foreign"]
 
-        prices = yf.download(tickers, period=self.period)["Adj Close"].dropna()
-        prices = (prices / prices.iloc[0] - 1) * 100
+        prices = yf.download(tickers, period=self.period).dropna()
+        prices = np.log(prices["Adj Close"] / prices["Adj Close"].shift(1))
+        prices = prices.cumsum()
+        prices = (np.exp(prices) - 1) * 100
         prices = prices.reset_index().melt(
             id_vars="Date", var_name="Ticker", value_name="Growth (%)"
         )
