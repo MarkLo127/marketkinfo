@@ -522,11 +522,11 @@ class tradedata:
     @staticmethod
     def calculate_difference(stock_data, period_days):
         """計算最新價格與指定天數前的價格差異。"""
-        latest_price = stock_data.iloc[-1]["Adj Close"]
+        latest_price = stock_data.iloc[-1]["Close"]
         previous_price = (
-            stock_data.iloc[-period_days]["Adj Close"]
+            stock_data.iloc[-period_days]["Close"]
             if len(stock_data) > period_days
-            else stock_data.iloc[0]["Adj Close"]
+            else stock_data.iloc[0]["Close"]
         )
         price_difference = latest_price - previous_price
         percent_difference = (
@@ -546,14 +546,14 @@ class tradedata:
         )
 
         # 計算移動平均線
-        mav5 = stock_data["Adj Close"].rolling(window=5).mean()
-        mav20 = stock_data["Adj Close"].rolling(window=20).mean()
-        mav60 = stock_data["Adj Close"].rolling(window=60).mean()
+        mav5 = stock_data["Close"].rolling(window=5).mean()
+        mav20 = stock_data["Close"].rolling(window=20).mean()
+        mav60 = stock_data["Close"].rolling(window=60).mean()
 
         # 計算RSI和MACD
-        rsi = RSIIndicator(close=stock_data["Adj Close"], window=14)
+        rsi = RSIIndicator(close=stock_data["Close"], window=14)
         macd = MACD(
-            close=stock_data["Adj Close"], window_slow=26, window_fast=12, window_sign=9
+            close=stock_data["Close"], window_slow=26, window_fast=12, window_sign=9
         )
 
         # K線圖
@@ -563,7 +563,7 @@ class tradedata:
                 open=stock_data["Open"],
                 high=stock_data["High"],
                 low=stock_data["Low"],
-                close=stock_data["Adj Close"],
+                close=stock_data["Close"],
                 hovertext="K線",
                 hoverinfo="text",
             ),
@@ -606,7 +606,7 @@ class tradedata:
 
         # 交易量條形圖
         colors = [
-            "green" if row["Open"] - row["Adj Close"] >= 0 else "red"
+            "green" if row["Open"] - row["Close"] >= 0 else "red"
             for _, row in stock_data.iterrows()
         ]
         fig.add_trace(
@@ -1202,7 +1202,7 @@ def app():
                         tradedata.calculate_difference(stock_data, period_days)
                     )
 
-                    latest_close_price = stock_data.iloc[-1]["Adj Close"]
+                    latest_close_price = stock_data.iloc[-1]["Close"]
 
                     highest_price = stock_data["High"].max()
                     lowest_price = stock_data["Low"].min()
