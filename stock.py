@@ -148,7 +148,7 @@ class plotindex:
         tickers = self.symbols["index"]
 
         prices = yf.download(tickers, period=self.period).dropna()
-        prices = np.log(prices["Adj Close"] / prices["Adj Close"].shift(1))
+        prices = np.log(prices["Close"] / prices["Close"].shift(1))
         prices = prices.cumsum()
         prices = (np.exp(prices) - 1) * 100
         prices = prices.reset_index().melt(
@@ -204,7 +204,7 @@ class plotindex:
         tickers = self.symbols["foreign"]
 
         prices = yf.download(tickers, period=self.period).dropna()
-        prices = np.log(prices["Adj Close"] / prices["Adj Close"].shift(1))
+        prices = np.log(prices["Close"] / prices["Close"].shift(1))
         prices = prices.cumsum()
         prices = (np.exp(prices) - 1) * 100
         prices = prices.reset_index().melt(
