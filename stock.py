@@ -103,7 +103,7 @@ class plotindex:
         tickers = self.symbols[self.plot_type]
 
         try:
-            data = yf.download(tickers, period=self.period)["Adj Close"]
+            data = yf.download(tickers, period=self.period)["Close"]
             for symbol in tickers:
                 if symbol in data:
                     self.data[symbol] = data[symbol].dropna()
