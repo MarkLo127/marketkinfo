@@ -1188,7 +1188,7 @@ def app():
                     stock_data = tradedata.getdata(symbol, period)
                     st.subheader(f"{symbol}-{time_range}交易數據")
                 elif range == "自訂範圍":
-                    stock_data = tradedata.getdata_timerange(
+                    stock_data = tradedata.get_data_time_range(
                         symbol, start_date, end_date
                     )
                     st.subheader(f"{symbol}-{start_date}～{end_date}交易數據")
