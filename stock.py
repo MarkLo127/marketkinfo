@@ -229,31 +229,8 @@ class plotindex:
             self.plot_foreign()
             self.plot_foreign_vs()
 
-
 # 2.公司基本資訊
 class cominfo:
-    tran_dict = {
-        "address1": "地址",
-        "city": "城市",
-        "country": "國家",
-        "phone": "電話",
-        "website": "網站",
-        "industry": "行業",
-        "sector": "產業",
-        "fullTimeEmployees": "全職員工數量",
-        "marketCap": "市值",
-        "totalRevenue": "總收入",
-        "netIncomeToCommon": "淨利潤",
-        "trailingEps": "每股盈餘(EPS)",
-        "trailingPE": "本益比(PE)",
-        "dividendRate": "股息率",
-        "dividendYield": "股息殖利率",
-        "beta": "Beta值",
-        "profitMargins": "利潤率",
-        "revenueGrowth": "收入成長率",
-        "earningsGrowth": "收益成長率",
-    }
-
     def __init__(self, symbol):
         self.symbol = symbol
         self.com_info = self.get_com_info()
@@ -271,24 +248,11 @@ class cominfo:
         df = pd.read_json("df.json").head(1).transpose()
         return df
 
-    def tran_info(self):
-        """翻譯公司資訊並格式化顯示"""
-        tran_info = {}
-        self.com_info.index = self.com_info.index.str.strip()  # 去除索引空格
-
-        for key in self.tran_dict.keys():
-            if key in self.com_info.index:
-                value = self.com_info.loc[key].values[0]
-                if isinstance(value, float):
-                    if "rate" in key or "Growth" in key or "Yield" in key:
-                        value = f"{value * 100:.2f}%"  # 百分比格式
-                    else:
-                        value = f"{value:,.2f}"  # 千分位格式
-                elif isinstance(value, int):
-                    value = f"{value:,}"  # 千分位格式
-                tran_info[self.tran_dict[key]] = value
-
-        return pd.DataFrame.from_dict(tran_info, orient="index", columns=[" "])
+    def display_info(self):
+        """顯示公司資訊的 JSON 結構"""
+        with open("df.json", "r") as infile:
+            json_data = json.load(infile)
+        st.json(json_data)
 
     def get_location(self, address, city, country):
         """獲取公司位置的經緯度，若 address 無法定位則使用 city 定位"""
@@ -301,17 +265,16 @@ class cominfo:
         if location is None:
             location = geolocator.geocode(f"{city}, {country}")
         return location
-
-    def display_map(self, location, translated_df):
+    
+    def display_map(self, location,company):
         """顯示公司位置的地圖"""
         m = folium.Map(location=[location.latitude, location.longitude], zoom_start=15)
         folium.Marker(
             [location.latitude, location.longitude],
-            popup=translated_df.to_html(escape=False),
+            #popup=company.to_html(escape=False),
             tooltip=f"{self.symbol}位置",
         ).add_to(m)
         folium_static(m)
-
 
 # 4.公司財報
 # 年報
@@ -1088,7 +1051,6 @@ def app():
         if st.button("查詢"):
             if symbol:
                 company = cominfo(symbol)
-                translated_df = company.tran_info()
 
                 # 獲取地址資訊
                 address = company.com_info.loc["address1"].values[0]
@@ -1099,13 +1061,13 @@ def app():
                 location = company.get_location(address, city, country)
 
                 # 顯示翻譯後的資訊
-                st.subheader(f"{symbol}-基本資訊")
-                st.table(translated_df)
+                with st.expander(f"{symbol}-基本資訊"):
+                    company.display_info()
 
                 # 顯示地圖
                 if location:
                     st.subheader(f"{symbol}-位置")
-                    company.display_map(location, translated_df)
+                    company.display_map(location,company)
                 else:
                     st.error(f"無法獲取{symbol}位置。")
 
