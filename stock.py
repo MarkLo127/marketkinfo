@@ -236,43 +236,133 @@ class cominfo:
         self.com_info = self.get_com_info()
 
     def get_com_info(self):
-        """獲取公司的詳細資訊"""
+        """Retrieve detailed company information."""
         stock = yf.Ticker(self.symbol)
         com_info = stock.info
 
-        # 儲存資訊為 JSON
+        # Save information as JSON
         with open("df.json", "w") as outfile:
             json.dump(com_info, outfile)
 
-        # 讀取資料並轉置
-        df = pd.read_json("df.json").head(1).transpose()
-        return df
-
-    def display_info(self):
-        """顯示公司資訊的 JSON 結構"""
+        # Load JSON directly
         with open("df.json", "r") as infile:
             json_data = json.load(infile)
-        st.json(json_data)
+        return json_data
+
+    def categorize_info(self):
+        """Categorize and extract company information into five categories."""
+        json_data = self.com_info
+
+        # 1. Basic Information
+        basic_info = {
+            "地址": json_data.get("address1"),
+            "城市": json_data.get("city"),
+            "州": json_data.get("state"),
+            "郵遞區號": json_data.get("zip"),
+            "國家": json_data.get("country"),
+            "電話": json_data.get("phone"),
+            "網站": json_data.get("website"),
+            "行業": json_data.get("industry"),
+            "部門": json_data.get("sector"),
+        }
+
+        # 2. Financial Information
+        financial_info = {
+            "全職員工": json_data.get("fullTimeEmployees"),
+            "市值": json_data.get("marketCap"),
+            "總收入": json_data.get("totalRevenue"),
+            "總現金": json_data.get("totalCash"),
+            "總負債": json_data.get("totalDebt"),
+            "自由現金流": json_data.get("freeCashflow"),
+            "營運現金流": json_data.get("operatingCashflow"),
+            "每股收入":json_data.get("revenuePerShare"),
+            "每股帳面價值":json_data.get("bookValue"),
+            "負債股權比率":json_data.get("debtToEquity"),
+            "總利潤率":json_data.get("grossMargins"),
+            "營業利潤率":json_data.get("operatingMargins"),
+            "資產回報率": json_data.get("returnOnAssets"),
+            "股東權益報酬率": json_data.get("returnOnEquity"),
+        }
+
+        # 3. Risk and Shareholder Information
+        risk_info = {
+            "審計風險": json_data.get("auditRisk"),
+            "董事會風險": json_data.get("boardRisk"),
+            "薪酬風險": json_data.get("compensationRisk"),
+            "股東權利風險": json_data.get("shareHolderRightsRisk"),
+            "內部人持股比例": json_data.get("heldPercentInsiders"),
+            "機構持股比例": json_data.get("heldPercentInstitutions"),
+        }
+
+        # 4. Executive Information
+        officers_info = json_data.get("companyOfficers", [])
+
+        # 5. Market Information
+        market_info = {
+            "當前價格": json_data.get("currentPrice"),
+            "52 週最高價": json_data.get("fiftyTwoWeekHigh"),
+            "52 週最低價": json_data.get("fiftyTwoWeekLow"),
+            "目標最高價": json_data.get("targetHighPrice"),
+            "目標最低價": json_data.get("targetLowPrice"),
+            "平均目標價": json_data.get("targetMeanPrice"),
+            "過去市盈率": json_data.get("trailingPE"),
+            "預測市盈率": json_data.get("forwardPE"),
+            "股息率": json_data.get("dividendRate"),
+            "股息收益率": json_data.get("dividendYield"),
+        }
+        
+        #other info
+        other_info = {
+            "企業價值": json_data.get("enterpriseValue"),
+            "每股收益（過去）": json_data.get("trailingEps"),
+            "每股收益（預測）": json_data.get("forwardEps"),
+            "盈利增長": json_data.get("earningsGrowth"),
+            "收入增長": json_data.get("revenueGrowth"),
+            "貨幣": json_data.get("financialCurrency"),
+        }        
+
+        return basic_info, financial_info, risk_info, officers_info, market_info,other_info
+
+    def display_categorized_info(self):
+        """Display categorized company information."""
+        basic_info, financial_info, risk_info, officers_info, market_info,other_info = self.categorize_info()
+
+        st.write("基本公司資訊")
+        st.write(pd.DataFrame([basic_info]))
+
+        st.write("公司財務資訊")
+        st.write(pd.DataFrame([financial_info]))
+
+        st.write("風險與股東資訊")
+        st.write(pd.DataFrame([risk_info]))
+        
+        st.write("高管訊息")
+        st.write(pd.DataFrame(officers_info))
+
+        st.write("股價訊息")
+        st.write(pd.DataFrame([market_info]))
+        
+        st.write("其他訊息")
+        st.write(pd.DataFrame([other_info]))
 
     def get_location(self, address, city, country):
-        """獲取公司位置的經緯度，若 address 無法定位則使用 city 定位"""
+        """Get the geographic location of the company."""
         geolocator = Nominatim(user_agent="streamlit_app")
 
-        # 優先嘗試使用 address 定位
+        # Try locating using the address
         location = geolocator.geocode(f"{address}, {city}, {country}")
 
-        # 如果 address 無法定位，則使用 city 和 country 來定位
+        # If address fails, try city and country
         if location is None:
             location = geolocator.geocode(f"{city}, {country}")
         return location
-    
-    def display_map(self, location,company):
-        """顯示公司位置的地圖"""
+
+    def display_map(self, location, company):
+        """Display a map with the company's location."""
         m = folium.Map(location=[location.latitude, location.longitude], zoom_start=15)
         folium.Marker(
             [location.latitude, location.longitude],
-            #popup=company.to_html(escape=False),
-            tooltip=f"{self.symbol}位置",
+            tooltip=f"{self.symbol} Location",
         ).add_to(m)
         folium_static(m)
 
@@ -1053,16 +1143,15 @@ def app():
                 company = cominfo(symbol)
 
                 # 獲取地址資訊
-                address = company.com_info.loc["address1"].values[0]
-                city = company.com_info.loc["city"].values[0]
-                country = company.com_info.loc["country"].values[0]
+                address = company.com_info["address1"]
+                city = company.com_info["city"]
+                country = company.com_info["country"]
 
                 # 獲取公司位置
                 location = company.get_location(address, city, country)
 
                 # 顯示翻譯後的資訊
-                with st.expander(f"{symbol}-基本資訊"):
-                    company.display_info()
+                company.display_categorized_info()
 
                 # 顯示地圖
                 if location:
