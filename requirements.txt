@@ -1,4 +1,4 @@
-yfinance>=0.2.47
+yfinance
 ta>=0.10
 pandas>=2.1.1
 numpy>=2.0
