@@ -739,7 +739,7 @@ class tradedata:
         st.plotly_chart(fig, use_container_width=True)
 
 #獲利資訊
-class Earnings:
+class Other:
     def __init__(self, symbol):
         self.symbol = symbol
         
@@ -748,6 +748,18 @@ class Earnings:
         eps = stock.earnings_dates
         st.subheader(f"{self.symbol}-獲利資訊")
         st.table(eps)
+    
+    def get_insider(self):
+        stock = yf.Ticker(self.symbol)
+        insider_purchases = stock.insider_purchases
+        insider_transactions = stock.insider_transactions
+        insider_roster_holders = stock.insider_roster_holders
+        st.subheader(f"{self.symbol}-內部交易統計")
+        st.table(insider_purchases)
+        st.subheader(f"{self.symbol}-內部交易")
+        st.dataframe(insider_transactions)
+        st.subheader(f"{self.symbol}-內部持股")
+        st.table(insider_roster_holders)
         
 # 6.期權數據
 class Option:
@@ -1284,9 +1296,10 @@ def app():
     elif options == "其他資訊":
         symbol = st.text_input("輸入美股代號").upper()
         if st.button("查詢"):
-            eps = Earnings(symbol)
-            eps.get_eps()
-
+            other = Other(symbol)
+            other.get_eps()
+            other.get.get_insider()
+            
     elif options == "期權數據":
         if "symbol" not in st.session_state:
             st.session_state.symbol = ""
