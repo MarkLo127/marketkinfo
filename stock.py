@@ -1088,8 +1088,7 @@ def app():
             "公司基本資訊",
             "公司財報",
             "交易數據",
-            "獲利資訊",
-            "內部資訊",
+            "其他資訊",
             "期權數據",
             "SEC文件",
             "機構買賣",
@@ -1281,7 +1280,7 @@ def app():
                 with st.expander(f"展開{symbol}-{time_range}數據"):
                     st.dataframe(stock_data)
     
-    elif options == "獲利資訊":
+    elif options == "其他資訊":
         symbol = st.text_input("輸入美股代號").upper()
         if st.button("查詢"):
             eps = Earnings(symbol)
