@@ -103,7 +103,7 @@ class plotindex:
         tickers = self.symbols[self.plot_type]
 
         try:
-            data = yf.history(tickers, period=self.period)["Close"]
+            data = yf.download(tickers, period=self.period)["Close"]
             for symbol in tickers:
                 if symbol in data:
                     self.data[symbol] = data[symbol].dropna()
@@ -147,7 +147,7 @@ class plotindex:
         st.subheader(f"美股大盤＆中小企業{self.time}走勢比較")
         tickers = self.symbols["index"]
 
-        prices = yf.history(tickers, period=self.period).dropna()
+        prices = yf.download(tickers, period=self.period).dropna()
         prices = np.log(prices["Close"] / prices["Close"].shift(1))
         prices = prices.cumsum()
         prices = (np.exp(prices) - 1) * 100
@@ -203,7 +203,7 @@ class plotindex:
         st.subheader(f"美股大盤＆海外大盤{self.time}走勢比較")
         tickers = self.symbols["foreign"]
 
-        prices = yf.history(tickers, period=self.period).dropna()
+        prices = yf.download(tickers, period=self.period).dropna()
         prices = np.log(prices["Close"] / prices["Close"].shift(1))
         prices = prices.cumsum()
         prices = (np.exp(prices) - 1) * 100
@@ -549,7 +549,7 @@ class tradedata:
     @staticmethod
     def getdata(symbol, time_range):
         """根據時間範圍下載股票數據。"""
-        stock_data = yf.history(symbol, period=time_range)
+        stock_data = yf.download(symbol, period=time_range)
         if isinstance(stock_data.columns, pd.MultiIndex):
             stock_data.columns = stock_data.columns.droplevel(1)  # 移除 'NVDA' 層級
         return stock_data
@@ -557,7 +557,7 @@ class tradedata:
     @staticmethod
     def get_data_time_range(symbol, start, end):
         """根據開始和結束日期下載股票數據。"""
-        stock_data = yf.history(symbol, start=start, end=end)
+        stock_data = yf.download(symbol, start=start, end=end)
         if isinstance(stock_data.columns, pd.MultiIndex):
             stock_data.columns = stock_data.columns.droplevel(1)  # 移除 'NVDA' 層級
         return stock_data
