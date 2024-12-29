@@ -1298,7 +1298,7 @@ def app():
         if st.button("查詢"):
             other = Other(symbol)
             other.get_eps()
-            other.get.get_insider()
+            other.get_insider()
             
     elif options == "期權數據":
         if "symbol" not in st.session_state:
