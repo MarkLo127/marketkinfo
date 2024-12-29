@@ -755,11 +755,11 @@ class Other:
         insider_transactions = stock.insider_transactions
         insider_roster_holders = stock.insider_roster_holders
         st.subheader(f"{self.symbol}-內部交易統計")
-        st.table(insider_purchases)
+        st.dataframe(insider_purchases)
         st.subheader(f"{self.symbol}-內部交易")
         st.dataframe(insider_transactions)
         st.subheader(f"{self.symbol}-內部持股")
-        st.table(insider_roster_holders)
+        st.dataframe(insider_roster_holders)
         
 # 6.期權數據
 class Option:
