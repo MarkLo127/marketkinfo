@@ -549,7 +549,8 @@ class tradedata:
     @staticmethod
     def getdata(symbol, time_range):
         """根據時間範圍下載股票數據。"""
-        stock_data = yf.download(symbol, period=time_range)
+        stock_data = yf.Ticker(symbol)
+        stock_data = stock_data.history(period=time_range)
         if isinstance(stock_data.columns, pd.MultiIndex):
             stock_data.columns = stock_data.columns.droplevel(1)  # 移除 'NVDA' 層級
         return stock_data
