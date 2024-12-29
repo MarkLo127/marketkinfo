@@ -747,7 +747,7 @@ class Other:
         stock = yf.Ticker(self.symbol)
         eps = stock.earnings_dates
         st.subheader(f"{self.symbol}-獲利資訊")
-        st.table(eps)
+        st.dataframe(eps)
     
     def get_insider(self):
         stock = yf.Ticker(self.symbol)
