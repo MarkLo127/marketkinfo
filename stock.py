@@ -810,7 +810,7 @@ class secreport:
         """
         顯示 SEC 文件列表。
         """
-        filings = self.sec_filings  # 呼叫 get_sec_filings 來獲取數據
+        filings = self.get_sec_filings()  # 呼叫 get_sec_filings 來獲取數據
         if filings is not None and len(filings) > 0:
             # 確保 filings 是 DataFrame，否則將其轉換
             if isinstance(filings, list):
