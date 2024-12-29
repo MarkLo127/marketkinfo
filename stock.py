@@ -103,7 +103,7 @@ class plotindex:
         tickers = self.symbols[self.plot_type]
 
         try:
-            data = yf.download(tickers, period=self.period)["Close"]
+            data = yf.history(tickers, period=self.period)["Close"]
             for symbol in tickers:
                 if symbol in data:
                     self.data[symbol] = data[symbol].dropna()
@@ -147,7 +147,7 @@ class plotindex:
         st.subheader(f"美股大盤＆中小企業{self.time}走勢比較")
         tickers = self.symbols["index"]
 
-        prices = yf.download(tickers, period=self.period).dropna()
+        prices = yf.history(tickers, period=self.period).dropna()
         prices = np.log(prices["Close"] / prices["Close"].shift(1))
         prices = prices.cumsum()
         prices = (np.exp(prices) - 1) * 100
@@ -203,7 +203,7 @@ class plotindex:
         st.subheader(f"美股大盤＆海外大盤{self.time}走勢比較")
         tickers = self.symbols["foreign"]
 
-        prices = yf.download(tickers, period=self.period).dropna()
+        prices = yf.history(tickers, period=self.period).dropna()
         prices = np.log(prices["Close"] / prices["Close"].shift(1))
         prices = prices.cumsum()
         prices = (np.exp(prices) - 1) * 100
@@ -233,9 +233,9 @@ class plotindex:
 class cominfo:
     def __init__(self, symbol):
         self.symbol = symbol
-        self.com_info = self.get_com_info()
+        self.com_info = self.get_cominfo()
 
-    def get_com_info(self):
+    def get_cominfo(self):
         """Retrieve detailed company information."""
         stock = yf.Ticker(self.symbol)
         com_info = stock.info
@@ -327,22 +327,22 @@ class cominfo:
         """Display categorized company information."""
         basic_info, financial_info, risk_info, officers_info, market_info,other_info = self.categorize_info()
 
-        st.write("基本公司資訊")
+        st.subheader(f"{self.symbol}-基本公司資訊")
         st.write(pd.DataFrame([basic_info]))
 
-        st.write("公司財務資訊")
+        st.subheader(f"{self.symbol}-財務資訊")
         st.write(pd.DataFrame([financial_info]))
 
-        st.write("風險與股東資訊")
+        st.subheader(f"{self.symbol}-風險與股東資訊")
         st.write(pd.DataFrame([risk_info]))
         
-        st.write("高管訊息")
+        st.subheader(f"{self.symbol}-高管訊息")
         st.write(pd.DataFrame(officers_info))
 
-        st.write("股價訊息")
+        st.subheader(f"{self.symbol}-市場與股價訊息")
         st.write(pd.DataFrame([market_info]))
         
-        st.write("其他訊息")
+        st.subheader(f"{self.symbol}-其他訊息")
         st.write(pd.DataFrame([other_info]))
 
     def get_location(self, address, city, country):
@@ -373,7 +373,7 @@ class financialreport_y:
         self.symbol = symbol
         self.target_language = target_language
         self.balance_sheet = None
-        self.income_statement = None
+        self.income_stmt = None
         self.cash_flow = None
 
     # 多進程翻譯函數
@@ -427,44 +427,37 @@ class financialreport_y:
         try:
             stock = yf.Ticker(self.symbol)
             self.balance_sheet = stock.balance_sheet
-            self.income_statement = stock.financials
+            self.income_stmt = stock.income_stmt
             self.cash_flow = stock.cashflow
         except Exception as e:
             st.error(f"獲取財務報表發生錯誤：{str(e)}")
-            self.balance_sheet, self.income_statement, self.cash_flow = None, None, None
+            self.balance_sheet, self.income_stmt, self.cash_flow = None, None, None
 
     # 翻譯財務報表
     def tran_financial(self):
-        if self.balance_sheet is not None:
-            self.balance_sheet = self.tran_df(self.balance_sheet)
-        if self.income_statement is not None:
-            self.income_statement = self.tran_df(self.income_statement)
-        if self.cash_flow is not None:
-            self.cash_flow = self.tran_df(self.cash_flow)
+        self.balance_sheet = self.tran_df(self.balance_sheet)
+        self.income_stmt = self.tran_df(self.income_stmt)
+        self.cash_flow = self.tran_df(self.cash_flow)
 
     # 顯示財務報表
     def display_financial(self):
-        if self.balance_sheet is not None:
-            st.subheader(f"{self.symbol}-資產負債表/年")
-            st.dataframe(self.balance_sheet)
+        st.subheader(f"{self.symbol}-資產負債表/年")
+        st.dataframe(self.balance_sheet)
+        
+        st.subheader(f"{self.symbol}-綜合損益表/年")
+        st.dataframe(self.income_stmt)
 
-        if self.income_statement is not None:
-            st.subheader(f"{self.symbol}-綜合損益表/年")
-            st.dataframe(self.income_statement)
-
-        if self.cash_flow is not None:
-            st.subheader(f"{self.symbol}-現金流量表/年")
-            st.dataframe(self.cash_flow)
-
+        st.subheader(f"{self.symbol}-現金流量表/年")
+        st.dataframe(self.cash_flow)
 
 # 季報
 class financialreport_q:
     def __init__(self, symbol, target_language="zh-TW"):
         self.symbol = symbol
         self.target_language = target_language
-        self.quarterly_balance_sheet = None
-        self.quarterly_income_statement = None
-        self.quarterly_cash_flow = None
+        self.quarterly_balancesheet = None
+        self.quarterly_incomestmt = None
+        self.quarterly_cashflow = None
 
     # 多進程翻譯函數
     def tran(self, texts):
@@ -516,41 +509,38 @@ class financialreport_q:
     def get_financial_q(self):
         try:
             stock = yf.Ticker(self.symbol)
-            self.quarterly_balance_sheet = stock.quarterly_balance_sheet
-            self.quarterly_income_statement = stock.quarterly_financials
-            self.quarterly_cash_flow = stock.quarterly_cashflow
+            self.quarterly_balancesheet = stock.quarterly_balancesheet
+            self.quarterly_incomestmt = stock.quarterly_incomestmt
+            self.quarterly_cashflow = stock.quarterly_cashflow
         except Exception as e:
             st.error(f"獲取財務報表發生錯誤：{str(e)}")
             (
-                self.quarterly_balance_sheet,
-                self.quarterly_income_statement,
-                self.quarterly_cash_flow,
+                self.quarterly_balancesheet,
+                self.quarterly_incomestmt,
+                self.quarterly_cashflow,
             ) = (None, None, None)
 
     # 翻譯季度財務報表
     def tran_financial_q(self):
-        if self.quarterly_balance_sheet is not None:
-            self.quarterly_balance_sheet = self.tran_df(self.quarterly_balance_sheet)
-        if self.quarterly_income_statement is not None:
-            self.quarterly_income_statement = self.tran_df(
-                self.quarterly_income_statement
+        if self.quarterly_balancesheet is not None:
+            self.quarterly_balancesheet = self.tran_df(self.quarterly_balancesheet)
+        if self.quarterly_incomestmt is not None:
+            self.quarterly_incomestmt = self.tran_df(
+                self.quarterly_incomestmt
             )
-        if self.quarterly_cash_flow is not None:
-            self.quarterly_cash_flow = self.tran_df(self.quarterly_cash_flow)
+        if self.quarterly_cashflow is not None:
+            self.quarterly_cashflow = self.tran_df(self.quarterly_cashflow)
 
     # 顯示季度財務報表
     def display_financial_q(self):
-        if self.quarterly_balance_sheet is not None:
-            st.subheader(f"{self.symbol}-資產負債表/季")
-            st.dataframe(self.quarterly_balance_sheet)
+        st.subheader(f"{self.symbol}-資產負債表/季")
+        st.dataframe(self.quarterly_balancesheet)
 
-        if self.quarterly_income_statement is not None:
-            st.subheader(f"{self.symbol}-綜合損益表/季")
-            st.dataframe(self.quarterly_income_statement)
+        st.subheader(f"{self.symbol}-綜合損益表/季")
+        st.dataframe(self.quarterly_incomestmt)
 
-        if self.quarterly_cash_flow is not None:
-            st.subheader(f"{self.symbol}-現金流量表/季")
-            st.dataframe(self.quarterly_cash_flow)
+        st.subheader(f"{self.symbol}-現金流量表/季")
+        st.dataframe(self.quarterly_cashflow)
 
 
 # 5.交易數據
@@ -559,7 +549,7 @@ class tradedata:
     @staticmethod
     def getdata(symbol, time_range):
         """根據時間範圍下載股票數據。"""
-        stock_data = yf.download(symbol, period=time_range)
+        stock_data = yf.history(symbol, period=time_range)
         if isinstance(stock_data.columns, pd.MultiIndex):
             stock_data.columns = stock_data.columns.droplevel(1)  # 移除 'NVDA' 層級
         return stock_data
@@ -567,7 +557,7 @@ class tradedata:
     @staticmethod
     def get_data_time_range(symbol, start, end):
         """根據開始和結束日期下載股票數據。"""
-        stock_data = yf.download(symbol, start=start, end=end)
+        stock_data = yf.history(symbol, start=start, end=end)
         if isinstance(stock_data.columns, pd.MultiIndex):
             stock_data.columns = stock_data.columns.droplevel(1)  # 移除 'NVDA' 層級
         return stock_data
@@ -747,7 +737,17 @@ class tradedata:
         fig.update_layout(showlegend=False)
         st.plotly_chart(fig, use_container_width=True)
 
-
+#獲利資訊
+class Earnings:
+    def __init__(self, symbol):
+        self.symbol = symbol
+        
+    def get_eps(self):
+        stock = yf.Ticker(self.symbol)
+        eps = stock.earnings_dates
+        st.subheader(f"{self.symbol}-獲利資訊")
+        st.table(eps)
+        
 # 6.期權數據
 class Option:
     def __init__(self, symbol):
@@ -809,7 +809,7 @@ class secreport:
         """
         顯示 SEC 文件列表。
         """
-        filings = self.get_sec_filings()  # 呼叫 get_sec_filings 來獲取數據
+        filings = self.sec_filings  # 呼叫 get_sec_filings 來獲取數據
         if filings is not None and len(filings) > 0:
             # 確保 filings 是 DataFrame，否則將其轉換
             if isinstance(filings, list):
@@ -1088,6 +1088,8 @@ def app():
             "公司基本資訊",
             "公司財報",
             "交易數據",
+            "獲利資訊",
+            "內部資訊",
             "期權數據",
             "SEC文件",
             "機構買賣",
@@ -1278,6 +1280,12 @@ def app():
                     st.error(f"查無{symbol}數據")
                 with st.expander(f"展開{symbol}-{time_range}數據"):
                     st.dataframe(stock_data)
+    
+    elif options == "獲利資訊":
+        symbol = st.text_input("輸入美股代號").upper()
+        if st.button("查詢"):
+            eps = Earnings(symbol)
+            eps.get_eps()
 
     elif options == "期權數據":
         if "symbol" not in st.session_state:
