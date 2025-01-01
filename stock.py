@@ -1,4 +1,3 @@
-import streamlit as st
 from data.plotindex import *
 from data.cominfo import *
 from data.financialreport_y import *
@@ -9,6 +8,8 @@ from data.Option import *
 from data.Holding import *
 from data.News import *
 from data.secreport import *
+
+import streamlit as st
 
 # streamlit版面配置
 def app():
