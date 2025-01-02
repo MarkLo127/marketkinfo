@@ -242,38 +242,44 @@ def app():
             other.get_eps()
             other.get_insider()
             
-    elif options == "期權數據":
+     elif options == "期權數據":
         if "symbol" not in st.session_state:
             st.session_state.symbol = ""
-
+    
         if st.session_state.symbol == "":
             symbol = st.text_input("輸入美股代號").upper()
             left, middle, right = st.columns(3)
-            if middle.button("查詢",use_container_width=True):
+            if middle.button("查詢", use_container_width=True):
                 st.session_state.symbol = symbol  # 保存查詢的 symbol
         else:
             symbol = st.session_state.symbol
-
+    
         if symbol:
             option = Option(symbol)
             option_dates = option.get_option_dates()
             df = pd.DataFrame(option_dates, columns=["可用日期"])
             st.subheader(f"{symbol} 期權到期日")
             st.table(df)
-
+    
             date = st.date_input("選擇日期（請依照上面日期選擇）")
-            date_str = date.strftime("%Y-%m-%d")  # 將日轉換為字符串進行比較
-
+            date_str = date.strftime("%Y-%m-%d")  # 將日期轉換為字符串進行比較
+    
             if date_str in option_dates:
                 st.subheader(f"{symbol}看漲期權(到期日：{date_str})")
                 calls_df = option.options_calls_date(date_str)
                 st.dataframe(option.tran_col(calls_df))
-
+    
                 st.subheader(f"{symbol}看跌期權(到期日：{date_str})")
                 puts_df = option.options_puts_date(date_str)
                 st.dataframe(option.tran_col(puts_df))
             else:
                 st.error("查無相關日期期權")
+    
+            # 新增重新查詢股票按鈕
+            left, middle, right = st.columns(3)
+            if middle.button("查詢下一隻股票",use_container_width=True):
+                st.session_state.symbol = ""  # 清空 symbol，觸發重新查詢下一隻股票
+
 
     elif options == "SEC文件":
         symbol = st.text_input("輸入美股代號").upper()
