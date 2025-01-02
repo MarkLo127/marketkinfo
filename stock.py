@@ -46,9 +46,8 @@ def app():
     4. 其他專案：[MarketSearch](https://marketsearch.streamlit.app)  
     """
     )
+    if options == "大盤指數":
     with st.st.expander("展開輸入參數"):
-
-        if options == "大盤指數":
             time_range = st.selectbox("選擇期間", ["短期","長期"])
             if time_range == "短期":
                 period = st.selectbox("選擇時長", ["1個月","3個月","6個月","年初至今"])
