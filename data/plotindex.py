@@ -1,3 +1,4 @@
+# 資料分析
 import pandas as pd  # 資料處理
 import numpy as np  # 資料處理
 
@@ -15,8 +16,8 @@ import streamlit as st  # Streamlit 模組
 
 # 1.大盤指數
 class plotindex:
-    def tran(self):
-        return {
+    def tran(self):  # 修改方法签名，添加self参数
+        return {  # 修改为返回字典而不是使用大括号
             "^IXIC": "NASDAQ",
             "^NDX": "NASDAQ 100",
             "^VIX": "VIX",
@@ -33,10 +34,9 @@ class plotindex:
             "^KS11": "韓國綜合股價指數",
         }
 
-    def __init__(self, period, time, interval, plot_type="index"):
+    def __init__(self, period, time, plot_type="index"):
         self.period = period
         self.time = time
-        self.interval = interval  # 新增 interval 參數
         self.plot_type = plot_type
         self.symbols = {
             "index": [
@@ -60,7 +60,22 @@ class plotindex:
                 "^KS11",
             ],
         }
-        self.symbol_names = self.tran()
+        self.symbol_names = {
+            "^IXIC": "NASDAQ",
+            "^NDX": "NASDAQ 100",
+            "^VIX": "VIX",
+            "^GSPC": "S&P 500",
+            "^DJI": "Dow Jones",
+            "^SOX": "PHLX Semiconductor Sector",
+            "^RUT": "Russell 2000",
+            "BRK-A": "波克夏海瑟威",
+            "^HSI": "恆生指數",
+            "^STI": "新加坡海峽指數",
+            "^TWII": "加權指數",
+            "^N225": "日經指數",
+            "399001.SZ": "深證指數",
+            "^KS11": "韓國綜合股價指數",
+        }
         self.data = {}
 
     def fetch_data(self):
@@ -68,7 +83,7 @@ class plotindex:
         tickers = self.symbols[self.plot_type]
 
         try:
-            data = yf.download(tickers, period=self.period, interval=self.interval)["Close"]
+            data = yf.download(tickers, period=self.period)["Close"]
             for symbol in tickers:
                 if symbol in data:
                     self.data[symbol] = data[symbol].dropna()
@@ -104,7 +119,7 @@ class plotindex:
         st.plotly_chart(fig)
         with st.expander(f"展開美股大盤＆中小企業{self.time}走勢"):
             data = pd.DataFrame(self.data)
-            data = data.rename(columns=self.tran())
+            data = data.rename(columns=self.tran())  # 修改为调用tran方法
             st.dataframe(data)
 
     def plot_index_vs(self):
@@ -112,7 +127,7 @@ class plotindex:
         st.subheader(f"美股大盤＆中小企業{self.time}走勢比較")
         tickers = self.symbols["index"]
 
-        prices = yf.download(tickers, period=self.period, interval=self.interval).dropna()
+        prices = yf.download(tickers, period=self.period).dropna()
         prices = np.log(prices["Close"] / prices["Close"].shift(1))
         prices = prices.cumsum()
         prices = (np.exp(prices) - 1) * 100
@@ -120,6 +135,7 @@ class plotindex:
             id_vars="Date", var_name="Ticker", value_name="Growth (%)"
         )
 
+        # Use the custom names in the plot
         prices["Ticker"] = prices["Ticker"].map(self.symbol_names)
         fig = px.line(prices, x="Date", y="Growth (%)", color="Ticker")
         fig.update_layout(showlegend=False)
@@ -131,8 +147,9 @@ class plotindex:
         """Plot the foreign indexes."""
         st.subheader(f"美股大盤＆海外大盤{self.time}走勢")
 
+        # Create Plotly subplot figure for foreign indexes
         fig = make_subplots(
-            rows=4,
+            rows=4,  # 确保行数与数据数量匹配
             cols=2,
             subplot_titles=[
                 self.symbol_names[symbol] for symbol in self.symbols["foreign"]
@@ -140,7 +157,7 @@ class plotindex:
         )
 
         for i, symbol in enumerate(self.symbols["foreign"]):
-            if symbol in self.data:
+            if symbol in self.data:  # 确保数据存在
                 row = (i // 2) + 1
                 col = (i % 2) + 1
                 fig.add_trace(
@@ -158,7 +175,7 @@ class plotindex:
         st.plotly_chart(fig)
         with st.expander(f"展開美股大盤＆海外大盤{self.time}走勢"):
             data = pd.DataFrame(self.data)
-            data = data.rename(columns=self.tran())
+            data = data.rename(columns=self.tran())  # 调用tran方法
             st.dataframe(data)
 
     def plot_foreign_vs(self):
@@ -166,7 +183,7 @@ class plotindex:
         st.subheader(f"美股大盤＆海外大盤{self.time}走勢比較")
         tickers = self.symbols["foreign"]
 
-        prices = yf.download(tickers, period=self.period, interval=self.interval).dropna()
+        prices = yf.download(tickers, period=self.period).dropna()
         prices = np.log(prices["Close"] / prices["Close"].shift(1))
         prices = prices.cumsum()
         prices = (np.exp(prices) - 1) * 100
@@ -174,6 +191,7 @@ class plotindex:
             id_vars="Date", var_name="Ticker", value_name="Growth (%)"
         )
 
+        # Use the custom names in the plot
         prices["Ticker"] = prices["Ticker"].map(self.symbol_names)
         fig = px.line(prices, x="Date", y="Growth (%)", color="Ticker")
         fig.update_layout(showlegend=False)
