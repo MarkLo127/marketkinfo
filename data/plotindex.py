@@ -33,7 +33,7 @@ class plotindex:
             "^KS11": "韓國綜合股價指數",
         }
 
-    def __init__(self, period, time, interval="1d", plot_type="index"):
+    def __init__(self, period, time, interval, plot_type="index"):
         self.period = period
         self.time = time
         self.interval = interval  # 新增 interval 參數
