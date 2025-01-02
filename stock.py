@@ -48,28 +48,41 @@ def app():
     )
 
     if options == "大盤指數":
-        period = st.selectbox(
-            "選擇時長", ["年初至今", "1年", "2年", "5年", "10年", "全部"]
-        )
-        if period == "年初至今":
+        time_range = st.selectbox("選擇期間", ["短期","長期"])
+        period = st.selectbox("選擇時長", ["1天","5天","1個月","3個月","6個月","年初至今", "1年", "2年", "5年", "10年", "全部"])
+        if time_range == "短期" and period == "1天":
+            period = "1d"
+            time = "1天"
+        elif time_range == "短期" and period == "5天":
+            period = "5d"
+            time = "5天"
+        elif time_range == "短期" and period == "1個月":
+            period = "1mo"
+            time = "1個月"
+        elif time_range == "短期" and period == "3個月":
+            period = "3mo"
+            time = "3個月"
+        elif time_range == "短期" and period == "6個月":
+            period = "6mo"
+            time = "6個月"
+        elif time_range == "短期" and period == "年初至今":
             period = "ytd"
             time = "年初至今"
-        elif period == "1年":
+        elif time_range == "長期" and period == "1年":
             period = "1y"
             time = "1年"
-        elif period == "2年":
+        elif time_range == "長期" and period == "2年":
             period = "2y"
             time = "2年"
-        elif period == "5年":
+        elif time_range == "長期" and period == "5年":
             period = "5y"
             time = "5年"
-        elif period == "10年":
+        elif time_range == "長期" and period == "10年":
             period = "10y"
             time = "10年"
-        elif period == "全部":
+        elif time_range == "長期" and period == "全部":
             period = "max"
             time = "全部"
-
         # 繪製大盤指數
         pltindex = plotindex(period, time, plot_type="index")
         pltindex.plot()
