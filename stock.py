@@ -242,7 +242,7 @@ def app():
             other.get_eps()
             other.get_insider()
             
-     elif options == "期權數據":
+    elif options == "期權數據":
         if "symbol" not in st.session_state:
             st.session_state.symbol = ""
     
