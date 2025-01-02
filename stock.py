@@ -91,7 +91,7 @@ def app():
 
     elif options == "公司基本資訊":
         symbol = st.text_input("輸入美股代號").upper()
-        middle = st.columns(1)
+        left, middle, right = st.columns(3)
         if middle.button("查詢", use_container_width=True):
             if symbol:
                 company = cominfo(symbol)
@@ -121,18 +121,18 @@ def app():
                 symbol = st.text_input("輸入美股代碼").upper()
             elif time_range == "季報":
                 symbol = st.text_input("輸入美股代碼").upper()
-        middle = st.columns(1)
+        left, middle, right = st.columns(3)
         if middle.button("查詢",use_container_width=True):
-        if time_range == "年報":
-            translator = financialreport_y(symbol)
-            translator.get_financial()
-            translator.tran_financial()
-            translator.display_financial()
-        elif time_range == "季報":
-            translator_quarterly = financialreport_q(symbol)
-            translator_quarterly.get_financial_q()
-            translator_quarterly.tran_financial_q()
-            translator_quarterly.display_financial_q()
+            if time_range == "年報":
+                translator = financialreport_y(symbol)
+                translator.get_financial()
+                translator.tran_financial()
+                translator.display_financial()
+            elif time_range == "季報":
+                translator_quarterly = financialreport_q(symbol)
+                translator_quarterly.get_financial_q()
+                translator_quarterly.tran_financial_q()
+                translator_quarterly.display_financial_q()
 
     elif options == "交易數據":
         with st.expander("展開輸入參數"):
@@ -186,60 +186,61 @@ def app():
                 time_range = f"{start_date}~{end_date}"
                 if start_date and end_date:
                     period_days = (end_date - start_date).days
-
-        #if st.button("查詢"):
-        if symbol:
-            # 获取股票数据
-            if range == "長期" or range == "短期":
-                stock_data = tradedata.getdata(symbol, period)
-                st.subheader(f"{symbol}-{time_range}交易數據")
-            elif range == "自訂範圍":
-                stock_data = tradedata.get_data_time_range(
-                    symbol, start_date, end_date
-                )
-                st.subheader(f"{symbol}-{start_date}～{end_date}交易數據")
-
-            if stock_data is not None and not stock_data.empty:
-                if period_days is None:
-                    period_days = len(
-                        stock_data
-                    )  # 更新 period_days 为 stock_data 的长度
-                price_difference, percent_difference = (
-                    tradedata.calculate_difference(stock_data, period_days)
-                )
-
-                latest_close_price = stock_data.iloc[-1]["Close"]
-
-                highest_price = stock_data["High"].max()
-                lowest_price = stock_data["Low"].min()
-
-                col1, col2, col3, col4 = st.columns(4)
-
-                with col1:
-                    st.metric("最新收盤價", f"${latest_close_price:.2f}")
-                with col2:
-                    st.metric(
-                        f"{time_range}增長率",
-                        f"${price_difference:.2f}",
-                        f"{percent_difference:+.2f}%",
+        left, middle, right = st.columns(3)
+        if middle.button("查詢",use_container_width=True):
+            if symbol:
+                # 获取股票数据
+                if range == "長期" or range == "短期":
+                    stock_data = tradedata.getdata(symbol, period)
+                    st.subheader(f"{symbol}-{time_range}交易數據")
+                elif range == "自訂範圍":
+                    stock_data = tradedata.get_data_time_range(
+                        symbol, start_date, end_date
                     )
-                with col3:
-                    st.metric(f"{time_range}最高價", f"${highest_price:.2f}")
-                with col4:
-                    st.metric(f"{time_range}最低價", f"${lowest_price:.2f}")
-                st.subheader(f"{symbol}-{time_range}K線圖表")
-                tradedata.plot_kline(stock_data)
-            else:
-                st.error(f"查無{symbol}數據")
-            with st.expander(f"展開{symbol}-{time_range}數據"):
-                st.dataframe(stock_data)
+                    st.subheader(f"{symbol}-{start_date}～{end_date}交易數據")
+            
+                if stock_data is not None and not stock_data.empty:
+                    if period_days is None:
+                        period_days = len(
+                            stock_data
+                        )  # 更新 period_days 为 stock_data 的长度
+                    price_difference, percent_difference = (
+                        tradedata.calculate_difference(stock_data, period_days)
+                    )
+            
+                    latest_close_price = stock_data.iloc[-1]["Close"]
+            
+                    highest_price = stock_data["High"].max()
+                    lowest_price = stock_data["Low"].min()
+            
+                    col1, col2, col3, col4 = st.columns(4)
+            
+                    with col1:
+                        st.metric("最新收盤價", f"${latest_close_price:.2f}")
+                    with col2:
+                        st.metric(
+                            f"{time_range}增長率",
+                            f"${price_difference:.2f}",
+                            f"{percent_difference:+.2f}%",
+                        )
+                    with col3:
+                        st.metric(f"{time_range}最高價", f"${highest_price:.2f}")
+                    with col4:
+                        st.metric(f"{time_range}最低價", f"${lowest_price:.2f}")
+                    st.subheader(f"{symbol}-{time_range}K線圖表")
+                    tradedata.plot_kline(stock_data)
+                else:
+                    st.error(f"查無{symbol}數據")
+                with st.expander(f"展開{symbol}-{time_range}數據"):
+                    st.dataframe(stock_data)
     
     elif options == "其他資訊":
         symbol = st.text_input("輸入美股代號").upper()
-        #if st.button("查詢"):
-        other = Other(symbol)
-        other.get_eps()
-        other.get_insider()
+        left, middle, right = st.columns(3)
+        if middle.button("查詢",use_container_width=True):
+            other = Other(symbol)
+            other.get_eps()
+            other.get_insider()
             
     elif options == "期權數據":
         if "symbol" not in st.session_state:
@@ -247,8 +248,9 @@ def app():
 
         if st.session_state.symbol == "":
             symbol = st.text_input("輸入美股代號").upper()
-            #if st.button("查詢"):
-            st.session_state.symbol = symbol  # 保存查詢的 symbol
+            left, middle, right = st.columns(3)
+            if middle.button("查詢",use_container_width=True):
+                st.session_state.symbol = symbol  # 保存查詢的 symbol
         else:
             symbol = st.session_state.symbol
 
@@ -275,35 +277,39 @@ def app():
 
     elif options == "SEC文件":
         symbol = st.text_input("輸入美股代號").upper()
-        #if st.button("查詢"):
-        sec = secreport(symbol)
-        sec.display_filings()
+        left, middle, right = st.columns(3)
+        if middle.button("查詢",use_container_width=True):
+            sec = secreport(symbol)
+            sec.display_filings()
 
     elif options == "機構買賣":
         symbol = st.text_input("輸入美股代號").upper()
-        Holding.holder(symbol)
-        Holding.fund_holder(symbol)
-        Holding.scrape_finviz(symbol)
-        st.markdown(f"[資料來源](https://finviz.com/quote.ashx?t={symbol})")
+        left, middle, right = st.columns(3)
+        if middle.button("查詢",use_container_width=True):
+            Holding.holder(symbol)
+            Holding.fund_holder(symbol)
+            Holding.scrape_finviz(symbol)
+            st.markdown(f"[資料來源](https://finviz.com/quote.ashx?t={symbol})")
 
     elif options == "近期相關消息":
         symbol = st.text_input("輸入美股代號").upper()
-        #if st.button("查詢"):
-        if symbol:
-            news_data = News()
-            news_data = news_data.getnews(symbol)
-            if news_data:
-                # 将新闻数据转换为DataFrame
-                df = pd.DataFrame(news_data)
-                st.subheader(f"{symbol}-近期相關消息")
-                st.write(df)  # 显示表格
-                # 打印所有新闻链接
-                with st.expander(f"展開{symbol}-近期相關消息連結"):
-                    for news in news_data:
-                        st.write(f'**[{news["Title"]}]({news["URL"]})**')
-                st.markdown(f"[資料來源](https://finviz.com/quote.ashx?t={symbol})")
-            else:
-                st.write(f"查無{symbol}近期相關消息")
+        left, middle, right = st.columns(3)
+        if middle.button("查詢",use_container_width=True):
+            if symbol:
+                news_data = News()
+                news_data = news_data.getnews(symbol)
+                if news_data:
+                    # 将新闻数据转换为DataFrame
+                    df = pd.DataFrame(news_data)
+                    st.subheader(f"{symbol}-近期相關消息")
+                    st.write(df)  # 显示表格
+                    # 打印所有新闻链接
+                    with st.expander(f"展開{symbol}-近期相關消息連結"):
+                        for news in news_data:
+                            st.write(f'**[{news["Title"]}]({news["URL"]})**')
+                    st.markdown(f"[資料來源](https://finviz.com/quote.ashx?t={symbol})")
+                else:
+                    st.write(f"查無{symbol}近期相關消息")
 
 
 if __name__ == "__main__":
