@@ -48,31 +48,7 @@ def app():
     )
 
     if options == "大盤指數":
-        time_range = st.selectbox("選擇期間", ["超短期","短期","長期"])
-        if time_range == "超短期":
-            interval = st.selectbox("選擇時長", ["1分鐘","2分鐘","5分鐘","15分鐘","30分鐘","1小時", "1小時30分鐘"])
-            if interval == "1分鐘":
-                interval = "1m"
-                time = "1分鐘"
-            elif interval == "2分鐘":
-                interval = "2m"
-                time = "2分鐘"
-            elif interval == "5分鐘":
-                interval = "5m"
-                time = "5分鐘"
-            elif interval == "15分鐘":
-                interval = "15m"
-                time = "15分鐘"
-            elif interval == "30分鐘":
-                interval = "30m"
-                time = "30分鐘"
-            elif interval == "1小時":
-                interval = "1h"
-                time = "1小時"
-            elif interval == "1小時30分鐘":
-                interval = "90m"
-                time = "1小時"
-                
+        time_range = st.selectbox("選擇期間", ["短期","長期"])              
         elif time_range == "短期":
             period = st.selectbox("選擇時長", ["1天","5天","1個月","3個月","6個月","年初至今"])
             if period == "1天":
