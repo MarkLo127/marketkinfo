@@ -91,27 +91,28 @@ def app():
 
     elif options == "公司基本資訊":
         symbol = st.text_input("輸入美股代號").upper()
-        #if st.button("查詢"):
-        if symbol:
-            company = cominfo(symbol)
-
-            # 獲取地址資訊
-            address = company.com_info["address1"]
-            city = company.com_info["city"]
-            country = company.com_info["country"]
-
-            # 獲取公司位置
-            location = company.get_location(address, city, country)
-
-            # 顯示翻譯後的資訊
-            company.display_categorized_info()
-
-            # 顯示地圖
-            if location:
-                st.subheader(f"{symbol}-位置")
-                company.display_map(location,company)
-            else:
-                st.error(f"無法獲取{symbol}位置。")
+        middle = st.columns(1)
+        if middle.button("查詢", use_container_width=True):
+            if symbol:
+                company = cominfo(symbol)
+    
+                # 獲取地址資訊
+                address = company.com_info["address1"]
+                city = company.com_info["city"]
+                country = company.com_info["country"]
+    
+                # 獲取公司位置
+                location = company.get_location(address, city, country)
+    
+                # 顯示翻譯後的資訊
+                company.display_categorized_info()
+    
+                # 顯示地圖
+                if location:
+                    st.subheader(f"{symbol}-位置")
+                    company.display_map(location,company)
+                else:
+                    st.error(f"無法獲取{symbol}位置。")
 
     elif options == "公司財報":
         with st.expander("展開輸入參數"):
@@ -120,7 +121,8 @@ def app():
                 symbol = st.text_input("輸入美股代碼").upper()
             elif time_range == "季報":
                 symbol = st.text_input("輸入美股代碼").upper()
-        #if st.button("查詢"):
+        middle = st.columns(1)
+        if middle.button("查詢",use_container_width=True):
         if time_range == "年報":
             translator = financialreport_y(symbol)
             translator.get_financial()
