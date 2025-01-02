@@ -48,41 +48,71 @@ def app():
     )
 
     if options == "大盤指數":
-        time_range = st.selectbox("選擇期間", ["短期","長期"])
+        time_range = st.selectbox("選擇期間", ["超短期","短期","長期"])
+        interval = st.selectbox("選擇時長", ["1分鐘","2分鐘","5分鐘","15分鐘","30分鐘","1小時", "1小時30分鐘","1星期"])
         period = st.selectbox("選擇時長", ["1天","5天","1個月","3個月","6個月","年初至今", "1年", "2年", "5年", "10年", "全部"])
-        if time_range == "短期" and period == "1天":
-            period = "1d"
-            time = "1天"
-        elif time_range == "短期" and period == "5天":
-            period = "5d"
-            time = "5天"
-        elif time_range == "短期" and period == "1個月":
-            period = "1mo"
-            time = "1個月"
-        elif time_range == "短期" and period == "3個月":
-            period = "3mo"
-            time = "3個月"
-        elif time_range == "短期" and period == "6個月":
-            period = "6mo"
-            time = "6個月"
-        elif time_range == "短期" and period == "年初至今":
-            period = "ytd"
-            time = "年初至今"
-        elif time_range == "長期" and period == "1年":
-            period = "1y"
-            time = "1年"
-        elif time_range == "長期" and period == "2年":
-            period = "2y"
-            time = "2年"
-        elif time_range == "長期" and period == "5年":
-            period = "5y"
-            time = "5年"
-        elif time_range == "長期" and period == "10年":
-            period = "10y"
-            time = "10年"
-        elif time_range == "長期" and period == "全部":
-            period = "max"
-            time = "全部"
+        if time_range == "超短期":
+            if interval == "1分鐘":
+                interval = "1m"
+                time = "1分鐘"
+            elif interval == "2分鐘":
+                interval = "2m"
+                time = "2分鐘"
+            elif interval == "5分鐘":
+                interval = "5m"
+                time = "5分鐘"
+            elif interval == "15分鐘":
+                interval = "15m"
+                time = "15分鐘"
+            elif interval == "30分鐘":
+                interval = "30m"
+                time = "30分鐘"
+            elif interval == "1小時":
+                interval = "1h"
+                time = "1小時"
+            elif interval == "1小時30分鐘":
+                interval = "90m"
+                time = "1小時"
+                
+        elif time_range == "短期":
+            if period == "1天":
+                period = "1d"
+                time = "1天"
+            elif period == "5天":
+                period = "5d"
+                time = "5天"
+            elif interval == "1星期":
+                interval = "1wk"
+                time = "1星期"
+            elif period == "1個月":
+                period = "1mo"
+                time = "1個月"
+            elif period == "3個月":
+                period = "3mo"
+                time = "3個月"
+            elif period == "6個月":
+                period = "6mo"
+                time = "6個月"
+            elif period == "年初至今":
+                period = "ytd"
+                time = "年初至今"
+                
+        elif time_range == "長期":
+            if period == "1年":
+                period = "1y"
+                time = "1年"
+            elif period == "2年":
+                period = "2y"
+                time = "2年"
+            elif period == "5年":
+                period = "5y"
+                time = "5年"
+            elif  period == "10年":
+                period = "10y"
+                time = "10年"
+            elif period == "全部":
+                period = "max"
+                time = "全部"
         # 繪製大盤指數
         pltindex = plotindex(period, time, plot_type="index")
         pltindex.plot()
