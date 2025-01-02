@@ -91,7 +91,7 @@ def app():
 
     elif options == "公司基本資訊":
         symbol = st.text_input("輸入美股代號").upper()
-        if st.button("查詢"):
+        #if st.button("查詢"):
             if symbol:
                 company = cominfo(symbol)
 
@@ -120,7 +120,7 @@ def app():
                 symbol = st.text_input("輸入美股代碼").upper()
             elif time_range == "季報":
                 symbol = st.text_input("輸入美股代碼").upper()
-        if st.button("查詢"):
+        #if st.button("查詢"):
             if time_range == "年報":
                 translator = financialreport_y(symbol)
                 translator.get_financial()
@@ -185,7 +185,7 @@ def app():
                 if start_date and end_date:
                     period_days = (end_date - start_date).days
 
-        if st.button("查詢"):
+        #if st.button("查詢"):
             if symbol:
                 # 获取股票数据
                 if range == "長期" or range == "短期":
@@ -234,7 +234,7 @@ def app():
     
     elif options == "其他資訊":
         symbol = st.text_input("輸入美股代號").upper()
-        if st.button("查詢"):
+        #if st.button("查詢"):
             other = Other(symbol)
             other.get_eps()
             other.get_insider()
@@ -273,7 +273,7 @@ def app():
 
     elif options == "SEC文件":
         symbol = st.text_input("輸入美股代號").upper()
-        if st.button("查詢"):
+        #if st.button("查詢"):
             sec = secreport(symbol)
             sec.display_filings()
 
@@ -287,7 +287,7 @@ def app():
 
     elif options == "近期相關消息":
         symbol = st.text_input("輸入美股代號").upper()
-        if st.button("查詢"):
+        #if st.button("查詢"):
             if symbol:
                 news_data = News()
                 news_data = news_data.getnews(symbol)
