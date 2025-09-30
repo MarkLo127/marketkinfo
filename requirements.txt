@@ -1,4 +1,5 @@
 yfinance
+finvizfinance
 ta
 pandas
 numpy

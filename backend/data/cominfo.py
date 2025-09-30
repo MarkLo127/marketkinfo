@@ -31,7 +31,7 @@ USE_FALLBACK_GEOCODER = True
 _USER_AGENT = "marketkinfo/1.0 (+mailto:your_email@example.com)"
 
 # 主要：Nominatim
-_GEOLocator = Nominatim(user_agent=_USER_AGENT, timeout=10)
+_GEOLocator = Nominatim(user_agent=_USER_AGENT)
 _GEOCODE = RateLimiter(
     _GEOLocator.geocode,
     min_delay_seconds=1.0,   # Nominatim 建議 >= 1 秒
@@ -41,11 +41,11 @@ _GEOCODE = RateLimiter(
 )
 
 # 備援：Photon、ArcGIS（若不需要可關掉 USE_FALLBACK_GEOCODER）
-_PHOTON = Photon(user_agent=_USER_AGENT, timeout=10)
+_PHOTON = Photon(user_agent=_USER_AGENT)
 _PHOTON_GEOCODE = RateLimiter(
     _PHOTON.geocode, min_delay_seconds=1.0, max_retries=2, error_wait_seconds=2.0, swallow_exceptions=False
 )
-_ARCGIS = ArcGIS(timeout=10)
+_ARCGIS = ArcGIS()
 _ARCGIS_GEOCODE = RateLimiter(
     _ARCGIS.geocode, min_delay_seconds=0.5, max_retries=2, error_wait_seconds=1.0, swallow_exceptions=False
 )
