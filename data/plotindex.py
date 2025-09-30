@@ -83,7 +83,7 @@ class plotindex:
         tickers = self.symbols[self.plot_type]
 
         try:
-            data = yf.download(tickers, period=self.period)["Close"]
+            data = yf.download(tickers, period=self.period,auto_adjust=False,progress=False)["Close"]
             for symbol in tickers:
                 if symbol in data:
                     self.data[symbol] = data[symbol].dropna()
@@ -127,7 +127,7 @@ class plotindex:
         st.subheader(f"美股大盤＆中小企業{self.time}走勢比較")
         tickers = self.symbols["index"]
 
-        prices = yf.download(tickers, period=self.period).dropna()
+        prices = yf.download(tickers, period=self.period,auto_adjust=False,progress=False).dropna()
         prices = np.log(prices["Close"] / prices["Close"].shift(1))
         prices = prices.cumsum()
         prices = (np.exp(prices) - 1) * 100
@@ -183,7 +183,7 @@ class plotindex:
         st.subheader(f"美股大盤＆海外大盤{self.time}走勢比較")
         tickers = self.symbols["foreign"]
 
-        prices = yf.download(tickers, period=self.period).dropna()
+        prices = yf.download(tickers, period=self.period,auto_adjust=False,progress=False).dropna()
         prices = np.log(prices["Close"] / prices["Close"].shift(1))
         prices = prices.cumsum()
         prices = (np.exp(prices) - 1) * 100
