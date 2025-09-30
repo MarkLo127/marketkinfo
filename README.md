@@ -39,5 +39,5 @@ pip install -r requirements.txt
 ```
 ### 4. 啟動應用程式
 ```bash
-streamlit run stock.py
+streamlit run main.py
 ```
