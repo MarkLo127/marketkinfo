@@ -2,7 +2,6 @@
 
 這是一個用於股市資訊分析應用程式，透過簡單搜索與簡潔頁面讓用戶快速取得資訊
 
-[MarketInfo](https://market-info-usa.streamlit.app)
 
 ## 目錄
 
