@@ -93,7 +93,7 @@ def app():
                 company = cominfo(symbol)
     
                 # 獲取地址資訊
-                address = company.com_info["address1"]
+                address = company.com_info["address"]
                 city = company.com_info["city"]
                 country = company.com_info["country"]
     
