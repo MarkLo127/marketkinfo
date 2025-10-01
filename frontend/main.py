@@ -1,3 +1,9 @@
+from pathlib import Path
+import sys
+ROOT = Path(__file__).resolve().parents[1]  # 專案根目錄: <專案>/ 
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
 from backend.data.cominfo import *
 from backend.data.holding import *
 from backend.data.news import *
