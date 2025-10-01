@@ -3,8 +3,7 @@ import pandas as pd  # 資料處理
 
 # 資料擷取與網路相關
 import yfinance as yf  # 股票數據
-import requests as res  # HTTP 請求
-from bs4 import BeautifulSoup  # 網頁解析
+from finvizfinance.quote import finvizfinance
 
 # 畫圖相關
 import plotly.graph_objs as go  # Plotly 圖表物件
@@ -24,12 +23,12 @@ class Holding:
         "Shares": "股份數",
         "Value": "價值",
         "Date": "日期",
-        "Action": "動作",
-        "Analyst": "分析機構",
-        "Rating Change": "評級變化",
-        "Price Target Change": "目標價格變化",
-        "Price Target Start": "目標價格起始",
-        "Price Target End": "目標價格結束",
+        "Status": "動作",
+        "Outer": "分析機構",
+        "Rating": "評級變化",
+        "Price": "目標價格變化",
+        "Price Start": "目標價格起始",
+        "Price End": "目標價格結束",
     }
 
     @staticmethod
@@ -111,61 +110,27 @@ class Holding:
 
     @staticmethod
     def scrape_finviz(symbol):
-        url = f"https://finviz.com/quote.ashx?t={symbol}"
-        headers = {"User-Agent": "Mozilla/5.0"}
-        response = res.get(url, headers=headers)
-
-        if response.status_code != 200:
-            raise Exception(f"無法從 {url} 獲取數據，狀態碼: {response.status_code}")
-
-        soup = BeautifulSoup(response.content, "html.parser")
-        table = soup.find(
-            "table", class_="js-table-ratings styled-table-new is-rounded is-small"
+        data = finvizfinance(symbol).ticker_outer_ratings()  # 獲取外部評級數據
+        df = pd.DataFrame(data).dropna(subset=["Price"])
+        df["Price"] = (
+            df["Price"].str.replace("→", "->").str.replace(" ", "")
         )
 
-        # 檢查 table 是否為 Tag 並且不是 None
-        from bs4.element import Tag
-        if not isinstance(table, Tag):
-            raise Exception("未能在頁面上找到評級表格。")
-
-        data = []
-        from bs4.element import Tag
-        for row in table.find_all("tr")[1:]:
-            if isinstance(row, Tag):
-                cols = row.find_all("td")
-                if len(cols) >= 4:
-                    data.append(
-                        {
-                            "Date": cols[0].text.strip(),
-                            "Action": cols[1].text.strip(),
-                            "Analyst": cols[2].text.strip(),
-                            "Rating Change": cols[3].text.strip(),
-                            "Price Target Change": (
-                                cols[4].text.strip() if len(cols) > 4 else None
-                            ),
-                        }
-                    )
-
-        df = pd.DataFrame(data).dropna(subset=["Price Target Change"])
-        df["Price Target Change"] = (
-            df["Price Target Change"].str.replace("→", "->").str.replace(" ", "")
-        )
-
-        if df["Price Target Change"].str.contains(r"\$").any():
-            price_change_ranges = df["Price Target Change"].str.extract(
+        if df["Price"].str.contains(r"\$").any():
+            price_change_ranges = df["Price"].str.extract(
                 r"\$(\d+)->\$(\d+)"
             )
             price_change_ranges = price_change_ranges.apply(
                 pd.to_numeric, errors="coerce"
             )
 
-            df["Price Target Start"] = price_change_ranges[0]
-            df["Price Target End"] = price_change_ranges[1]
+            df["Price Start"] = price_change_ranges[0]
+            df["Price End"] = price_change_ranges[1]
 
             # 設置評級的順序
-            rating_order = df["Rating Change"].unique().tolist()
-            df["Rating Change"] = pd.Categorical(
-                df["Rating Change"], categories=rating_order, ordered=True
+            rating_order = df["Rating"].unique().tolist()
+            df["Rating"] = pd.Categorical(
+                df["Rating"], categories=rating_order, ordered=True
             )
             df.rename(columns=Holding.tran_dict, inplace=True)
 

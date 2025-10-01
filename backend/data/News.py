@@ -3,6 +3,7 @@ import pandas as pd  # 資料處理
 
 # 資料擷取與網路相關
 import yfinance as yf  # 股票數據
+from finvizfinance.quote import finvizfinance
 import requests as res  # HTTP 請求
 from bs4 import BeautifulSoup  # 網頁解析
 

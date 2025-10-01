@@ -1,13 +1,16 @@
-from data.plotindex import *
-from data.cominfo import *
-from data.financialreport_y import *
-from data.financialreport_q import *
-from data.tradedata import *
-from data.Other import *
-from data.Option import *
-from data.Holding import *
-from data.News import *
-from data.secreport import *
+from backend.data.cominfo import *
+from backend.data.holding import *
+from backend.data.news import *
+from backend.data.option import *
+from backend.data.other import *
+from backend.data.plotindex import *
+from backend.data.tradedata import *
+
+from backend.finrepot.q import *
+from backend.finrepot.y import *
+from backend.finrepot.sec import *
+
+
 
 import streamlit as st
 
