@@ -83,10 +83,14 @@ class plotindex:
         tickers = self.symbols[self.plot_type]
 
         try:
-            data = yf.download(tickers, period=self.period,auto_adjust=False,progress=False)["Close"]
-            for symbol in tickers:
-                if symbol in data:
-                    self.data[symbol] = data[symbol].dropna()
+            data = yf.download(tickers, period=self.period, auto_adjust=False, progress=False)
+            if data is not None and "Close" in data:
+                close_data = data["Close"]
+                for symbol in tickers:
+                    if symbol in close_data:
+                        self.data[symbol] = close_data[symbol].dropna()
+            else:
+                st.error("無法取得資料或資料格式錯誤。")
         except Exception as e:
             st.error(f"Error fetching data: {e}")
 
@@ -127,13 +131,19 @@ class plotindex:
         st.subheader(f"美股大盤＆中小企業{self.time}走勢比較")
         tickers = self.symbols["index"]
 
-        prices = yf.download(tickers, period=self.period,auto_adjust=False,progress=False).dropna()
-        prices = np.log(prices["Close"] / prices["Close"].shift(1))
-        prices = prices.cumsum()
-        prices = (np.exp(prices) - 1) * 100
-        prices = prices.reset_index().melt(
-            id_vars="Date", var_name="Ticker", value_name="Growth (%)"
-        )
+        prices = yf.download(tickers, period=self.period, auto_adjust=False, progress=False)
+        if prices is not None and "Close" in prices:
+            prices = prices.dropna()
+            prices = np.log(prices["Close"] / prices["Close"].shift(1))
+            prices = prices.cumsum()
+            prices = (np.exp(prices) - 1) * 100
+            prices = pd.DataFrame(prices)  # Convert to DataFrame
+            prices = prices.reset_index().melt(
+                id_vars="Date", var_name="Ticker", value_name="Growth (%)"
+            )
+        else:
+            st.error("無法取得資料或資料格式錯誤。")
+            return
 
         # Use the custom names in the plot
         prices["Ticker"] = prices["Ticker"].map(self.symbol_names)
@@ -183,21 +193,27 @@ class plotindex:
         st.subheader(f"美股大盤＆海外大盤{self.time}走勢比較")
         tickers = self.symbols["foreign"]
 
-        prices = yf.download(tickers, period=self.period,auto_adjust=False,progress=False).dropna()
-        prices = np.log(prices["Close"] / prices["Close"].shift(1))
-        prices = prices.cumsum()
-        prices = (np.exp(prices) - 1) * 100
-        prices = prices.reset_index().melt(
-            id_vars="Date", var_name="Ticker", value_name="Growth (%)"
-        )
+        prices = yf.download(tickers, period=self.period, auto_adjust=False, progress=False)
+        if prices is not None and "Close" in prices:
+            prices = prices.dropna()
+            prices = np.log(prices["Close"] / prices["Close"].shift(1))
+            prices = prices.cumsum()
+            prices = (np.exp(prices) - 1) * 100
+            prices = pd.DataFrame(prices)  # Convert to DataFrame
+            prices = prices.reset_index().melt(
+                id_vars="Date", var_name="Ticker", value_name="Growth (%)"
+            )
 
-        # Use the custom names in the plot
-        prices["Ticker"] = prices["Ticker"].map(self.symbol_names)
-        fig = px.line(prices, x="Date", y="Growth (%)", color="Ticker")
-        fig.update_layout(showlegend=False)
-        st.plotly_chart(fig)
-        with st.expander(f"展開美股大盤＆海外大盤{self.time}走勢比較"):
-            st.dataframe(prices)
+            # Use the custom names in the plot
+            prices["Ticker"] = prices["Ticker"].map(self.symbol_names)
+            fig = px.line(prices, x="Date", y="Growth (%)", color="Ticker")
+            fig.update_layout(showlegend=False)
+            st.plotly_chart(fig)
+            with st.expander(f"展開美股大盤＆海外大盤{self.time}走勢比較"):
+                st.dataframe(prices)
+        else:
+            st.error("無法取得資料或資料格式錯誤。")
+            return
 
     def plot(self):
         """Plot the financial data based on the selected type."""

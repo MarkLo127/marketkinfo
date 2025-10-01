@@ -28,6 +28,8 @@ class secreport:
             # 確保 filings 是 DataFrame，否則將其轉換
             if isinstance(filings, list):
                 filings = pd.DataFrame(filings)  # 將列表轉換為 DataFrame
+            elif isinstance(filings, dict):
+                filings = pd.DataFrame([filings])  # 將 dict 轉換為 DataFrame
 
             st.subheader(f"{self.symbol}-SEC 文件:")
             st.dataframe(filings)  # 顯示為 DataFrame 表格

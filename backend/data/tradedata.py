@@ -33,7 +33,7 @@ class tradedata:
     def get_data_time_range(symbol, start, end):
         """根據開始和結束日期下載股票數據。"""
         stock_data = yf.download(symbol, start=start, end=end,auto_adjust=False,progress=False)
-        if isinstance(stock_data.columns, pd.MultiIndex):
+        if stock_data is not None and isinstance(stock_data.columns, pd.MultiIndex):
             stock_data.columns = stock_data.columns.droplevel(1)  # 移除 'NVDA' 層級
         return stock_data
 

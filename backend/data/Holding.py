@@ -123,23 +123,28 @@ class Holding:
             "table", class_="js-table-ratings styled-table-new is-rounded is-small"
         )
 
-        if table is None:
+        # 檢查 table 是否為 Tag 並且不是 None
+        from bs4.element import Tag
+        if not isinstance(table, Tag):
             raise Exception("未能在頁面上找到評級表格。")
 
         data = []
+        from bs4.element import Tag
         for row in table.find_all("tr")[1:]:
-            cols = row.find_all("td")
-            data.append(
-                {
-                    "Date": cols[0].text.strip(),
-                    "Action": cols[1].text.strip(),
-                    "Analyst": cols[2].text.strip(),
-                    "Rating Change": cols[3].text.strip(),
-                    "Price Target Change": (
-                        cols[4].text.strip() if len(cols) > 4 else None
-                    ),
-                }
-            )
+            if isinstance(row, Tag):
+                cols = row.find_all("td")
+                if len(cols) >= 4:
+                    data.append(
+                        {
+                            "Date": cols[0].text.strip(),
+                            "Action": cols[1].text.strip(),
+                            "Analyst": cols[2].text.strip(),
+                            "Rating Change": cols[3].text.strip(),
+                            "Price Target Change": (
+                                cols[4].text.strip() if len(cols) > 4 else None
+                            ),
+                        }
+                    )
 
         df = pd.DataFrame(data).dropna(subset=["Price Target Change"])
         df["Price Target Change"] = (
