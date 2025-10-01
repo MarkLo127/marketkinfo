@@ -52,7 +52,6 @@ def app():
     - 綠漲、紅跌  
     2. 本平台僅適用於數據搜尋，不建議任何投資行為  
     3. 排版問題建議使用電腦查詢數據  
-    4. 其他專案：[MarketSearch](https://marketsearch.streamlit.app)  
     """
     )
     if options == "大盤指數":
@@ -309,19 +308,18 @@ def app():
             if symbol:
                 news_data = News()
                 news_data = news_data.getnews(symbol)
-                if news_data:
-                    # 将新闻数据转换为DataFrame
-                    df = pd.DataFrame(news_data)
-                    st.subheader(f"{symbol}-近期相關消息")
-                    st.write(df)  # 显示表格
-                    # 打印所有新闻链接
-                    with st.expander(f"展開{symbol}-近期相關消息連結"):
-                        for news in news_data:
-                            st.write(f'**[{news["Title"]}]({news["URL"]})**')
-                    st.markdown(f"[資料來源](https://finviz.com/quote.ashx?t={symbol})")
-                else:
-                    st.write(f"查無{symbol}近期相關消息")
-
+                st.subheader(f"{symbol}-近期相關消息")
+                st.write(news_data)  # 显示表格
+                # 打印所有新闻链接
+                with st.expander(f"展開 {symbol} 近期相關消息連結"):
+                    for _, row in news_data.iterrows(): # pyright: ignore[reportOptionalMemberAccess]
+                        title = row["Title"]
+                        link = row["Link"]
+                        if pd.notna(link) and link.strip():
+                            st.write(f'**[{title}]({link})**')
+                        else:
+                            st.write(f'**{title}**（無連結）')
+                st.markdown(f"[資料來源](https://finviz.com/quote.ashx?t={symbol})")
 
 if __name__ == "__main__":
     app()

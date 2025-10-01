@@ -6,11 +6,9 @@ numpy
 streamlit
 streamlit-folium
 plotly
-requests
 folium
 pytz
 geopy
 numpy
-beautifulsoup4
 deep-translator
 
