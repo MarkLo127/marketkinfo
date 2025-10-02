@@ -8,7 +8,6 @@ from backend.data.cominfo import *
 from backend.data.holding import *
 from backend.data.news import *
 from backend.data.option import *
-from backend.data.other import *
 from backend.data.plotindex import *
 from backend.data.tradedata import *
 
@@ -38,7 +37,6 @@ def app():
             "公司基本資訊",
             "公司財報",
             "交易數據",
-            "其他資訊",
             "期權數據",
             "SEC文件",
             "機構買賣",
@@ -237,15 +235,7 @@ def app():
                     st.error(f"查無{symbol}數據")
                 with st.expander(f"展開{symbol}-{time_range}數據"):
                     st.dataframe(stock_data)
-    
-    elif options == "其他資訊":
-        symbol = st.text_input("輸入美股代號").upper()
-        left, middle, right = st.columns(3)
-        if middle.button("查詢",use_container_width=True):
-            other = Other(symbol)
-            other.get_eps()
-            other.get_insider()
-            
+          
     elif options == "期權數據":
         if "symbol" not in st.session_state:
             st.session_state.symbol = ""
